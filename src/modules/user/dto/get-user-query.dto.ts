@@ -1,13 +1,10 @@
-import { IsName } from 'src/common/dtos/name.dto';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 export class GetUserQueryDto extends PaginationDto {
-  @IsName(false)
-  username?: string;
-
-  @IsName(false)
-  firstName?: string;
-
-  @IsName(false)
-  lastName?: string;
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  full_name?: string;
 }

@@ -9,7 +9,7 @@ user
 full name
 phone number
 job
-position
+positiond
 employers?
 kurslar
 location

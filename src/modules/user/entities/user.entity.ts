@@ -4,28 +4,24 @@ import { Entity, Column } from 'typeorm';
 
 @Entity()
 export class User extends RootEntity {
+  @Column()
+  fullName: string;
+
   @Column({ unique: true })
-  username: string;
-
-  @Column()
-  firstName: string;
-
-  @Column()
-  lastName: string;
-
-  @Expose()
-  get fullName(): string {
-    return `${this.firstName} ${this.lastName}`;
-  }
-
-  @Column()
-  @Exclude()
-  password: string;
+  phoneNumber: string;
 
   @Column({ nullable: true })
-  @Exclude()
-  refreshToken: string;
+  job?: string;
 
-  @Column({ default: true })
-  isActive: boolean;
+  @Column({ nullable: true })
+  position?: string;
+
+  @Column({ nullable: true })
+  employers?: number;
+
+  // @OneToMany(() => Kurs, (kurs) => kurs.user)
+  // kurslar: Kurs[];
+
+  @Column()
+  location: string;
 }
