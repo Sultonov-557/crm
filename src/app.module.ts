@@ -5,7 +5,6 @@ import { UserModule } from './modules/user/user.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AdminModule } from './modules/admin/admin.module';
-import { KursModule } from './modules/kurs/kurs.module';
 import { LeadModule } from './modules/lead/lead.module';
 import { CourseModule } from './modules/course/course.module';
 
@@ -18,7 +17,6 @@ import { CourseModule } from './modules/course/course.module';
     }),
     UserModule,
     AdminModule,
-    KursModule,
     LeadModule,
     CourseModule,
   ],

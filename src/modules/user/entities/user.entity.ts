@@ -1,5 +1,7 @@
 import { RootEntity } from 'src/common/database/root.entity';
-import { Entity, Column } from 'typeorm';
+import { Course } from 'src/modules/course/entities/course.entity';
+import { Lead } from 'src/modules/lead/entities/lead.entity';
+import { Entity, Column, ManyToMany, JoinTable, OneToOne, JoinColumn } from 'typeorm';
 
 @Entity()
 export class User extends RootEntity {
@@ -21,8 +23,13 @@ export class User extends RootEntity {
   @Column({ nullable: true })
   employers?: number;
 
-  // @OneToMany(() => Kurs, (kurs) => kurs.user)
-  // kurslar: Kurs[];
+  @ManyToMany(() => Course, (course) => course.users)
+  @JoinTable()
+  courses: Course[];
+
+  @OneToOne(() => Lead, (lead) => lead.user)
+  @JoinColumn()
+  lead: Lead;
 
   @Column()
   location: string;
