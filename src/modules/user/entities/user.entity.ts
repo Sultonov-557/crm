@@ -9,6 +9,9 @@ export class User extends RootEntity {
   @Column({ unique: true })
   phoneNumber: string;
 
+  @Column({ unique: true })
+  telegram_user_id: string;
+
   @Column({ nullable: true })
   job?: string;
 
