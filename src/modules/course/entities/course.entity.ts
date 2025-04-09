@@ -7,6 +7,7 @@ export enum CourseStatus {
   INACTIVE = 'INACTIVE',
   COMPLETED = 'COMPLETED',
 }
+
 @Entity()
 export class Course extends RootEntity {
   @Column()
@@ -21,7 +22,10 @@ export class Course extends RootEntity {
   @Column()
   end_date: Date;
 
-  @Column({ enum: CourseStatus })
+  @Column({
+    type: 'enum',
+    enum: CourseStatus
+  })
   status: CourseStatus;
 
   @ManyToMany(() => User, (user) => user.courses)
