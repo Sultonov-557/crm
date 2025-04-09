@@ -4,6 +4,7 @@ import { DatabaseConfig } from './common/database/database.config';
 import { UserModule } from './modules/user/user.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { join } from 'path';
       serveRoot: '/public',
     }),
     UserModule,
+    AdminModule,
   ],
   controllers: [],
   providers: [],
