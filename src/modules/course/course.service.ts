@@ -6,6 +6,7 @@ import { Course } from './entities/course.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { findAllCourseQueryDto } from './dto/findAll-course.dto';
 import { User } from '../user/entities/user.entity';
+import { TelegramService } from '../telegram/telegram.service';
 
 @Injectable()
 export class CourseService {
@@ -14,14 +15,15 @@ export class CourseService {
     private readonly courseRepo: Repository<Course>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    private telegramService: TelegramService,
   ) {}
 
-  async create(createCourseDto: CreateCourseDto) {
+  async create(dto: CreateCourseDto) {
     const users = [];
-    const course = this.courseRepo.create(createCourseDto);
+    const course = this.courseRepo.create(dto);
 
-    if (createCourseDto.userIds?.length) {
-      for (let id of createCourseDto.userIds) {
+    if (dto.userIds?.length) {
+      for (let id of dto.userIds) {
         const user = await this.userRepo.findOne({ where: { id } });
         if (!user) {
           throw new Error(`User with id ${id} not found`);
@@ -29,6 +31,11 @@ export class CourseService {
         users.push(user);
       }
     }
+
+    if (dto.broadcastMessage) {
+      this.telegramService.broadcast(dto.broadcastMessage, dto.broadcastList);
+    }
+
     course.users = users;
     return this.courseRepo.save(course);
   }
@@ -47,7 +54,7 @@ export class CourseService {
     course.users.push(user);
     return this.courseRepo.save(course);
   }
-  
+
   async findAll(query: findAllCourseQueryDto) {
     const { limit = 10, page = 1 } = query;
     const [result, total] = await this.courseRepo.findAndCount({
@@ -103,5 +110,4 @@ export class CourseService {
     }
     await this.courseRepo.remove(course);
   }
-
 }

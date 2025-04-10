@@ -7,9 +7,15 @@ import { join } from 'path';
 import { AdminModule } from './modules/admin/admin.module';
 import { LeadModule } from './modules/lead/lead.module';
 import { CourseModule } from './modules/course/course.module';
+import { TelegramModule } from './modules/telegram/telegram.module';
+import { TelegrafModule } from 'nestjs-telegraf';
+import { env } from './common/config';
 
 @Module({
   imports: [
+    TelegrafModule.forRoot({
+      token: env.BOT_TOKEN,
+    }),
     TypeOrmModule.forRoot(DatabaseConfig),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
@@ -19,6 +25,7 @@ import { CourseModule } from './modules/course/course.module';
     AdminModule,
     LeadModule,
     CourseModule,
+    TelegramModule,
   ],
   controllers: [],
   providers: [],
