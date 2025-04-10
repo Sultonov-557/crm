@@ -1,28 +1,29 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { InjectBot } from 'nestjs-telegraf';
-import { Telegraf } from 'telegraf';
+import { Injectable } from '@nestjs/common';
 import { CreateGroupDto } from './dtos/create-group.dto';
 import { Group } from './entities/group.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { HttpError } from 'src/common/exception/http.error';
+import { env } from 'src/common/config';
+import axios from 'axios';
 
 @Injectable()
 export class TelegramService {
   constructor(
-    @InjectBot() private bot: Telegraf,
     @InjectRepository(Group) private readonly groupRepo: Repository<Group>,
   ) {}
 
   async broadcast(message: string, include: string[]) {
-    const groupIDs = await this.getGroups(include);
+    const groups = await this.getGroups(include);
 
-    for (let id of groupIDs) {
-      (async () => {
-        try {
-          await this.bot.telegram.sendMessage(id, message);
-        } catch {}
-      })();
+    for (let group of groups) {
+      try {
+        await axios.post(
+          `https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`,
+          { chat_id: '-100' + group.telegramId, text: message },
+          { timeout: 30000, family: 4 },
+        );
+      } catch {}
     }
   }
 
@@ -38,7 +39,7 @@ export class TelegramService {
     const groups = await this.groupRepo.find({
       where: { telegramId: include === undefined ? undefined : In(include) },
     });
-    return groups.map((v) => v.telegramId);
+    return groups;
   }
 
   async deleteGroup(telegramId: string) {
