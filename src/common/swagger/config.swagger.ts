@@ -1,8 +1,8 @@
 import { DocumentBuilder } from '@nestjs/swagger';
 
 export const ApiSwaggerOptions = new DocumentBuilder()
-  .setTitle('projectname')
-  .setDescription('projectname documentation')
+  .setTitle('CRM API')
+  .setDescription('API documentation for CRM')
   .setVersion('1.0')
   .addBearerAuth(
     {

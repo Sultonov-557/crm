@@ -16,7 +16,6 @@ async function bootstrap() {
   if (env.ENV == 'dev') {
     const ApiDocs = SwaggerModule.createDocument(app, ApiSwaggerOptions);
     SwaggerModule.setup('docs', app, ApiDocs, {
-      customCssUrl: '/public/swagger.css',
     });
   }
   await app.listen(env.PORT || 3000);
