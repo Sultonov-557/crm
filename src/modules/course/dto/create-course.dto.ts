@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsArray,
   IsDateString,
   IsEnum,
   IsNotEmpty,
@@ -36,4 +37,14 @@ export class CreateCourseDto {
   @ApiProperty({ type: [Number] })
   @IsOptional()
   userIds?: number[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsArray()
+  broadcastList?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNotEmpty()
+  broadcastMessage?: string;
 }
