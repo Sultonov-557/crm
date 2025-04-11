@@ -9,6 +9,7 @@ import { HttpError } from 'src/common/exception/http.error';
 import { findAllLeadQueryDto } from './dto/findAll-lead.dto';
 import { User, UserStatus } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
+import { env } from 'src/common/config';
 
 @Injectable()
 export class LeadService {
@@ -46,8 +47,6 @@ export class LeadService {
       throw HttpError({ code: 'COURSE_NOT_FOUND' });
     }
 
-    // console.log(user);
-
     if (!user) {
       user = await this.userService.create({
         phone_number: phoneNumber,
@@ -67,6 +66,15 @@ export class LeadService {
     lead.course = course;
     lead.user = user;
     return await this.leadRepo.save(lead);
+  }
+
+  async generateUrl(id: number) {
+    const lead = await this.courseRepo.findOne({ where: { id } });
+    if (!lead) {
+      throw HttpError({ code: 'COURSE_NOT_FOUND' });
+    }
+    const url = `${env.FRONTEND_URL}/${lead.id}`;
+    return url;
   }
 
   async findAll(query: findAllLeadQueryDto) {
