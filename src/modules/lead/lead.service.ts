@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
-import { Lead } from './entities/lead.entity';
+import { Lead, LeadStatus } from './entities/lead.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Course } from '../course/entities/course.entity';
 import { HttpError } from 'src/common/exception/http.error';
 import { findAllLeadQueryDto } from './dto/findAll-lead.dto';
 import { User, UserStatus } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
 import { env } from 'src/common/config';
+import { el } from 'date-fns/locale';
 
 @Injectable()
 export class LeadService {
@@ -85,6 +86,8 @@ export class LeadService {
 
     if (status) {
       whereConditions['status'] = status;
+    }else { 
+      whereConditions['status'] = Not(LeadStatus.DELETED);
     }
 
     const [result, total] = await this.leadRepo.findAndCount({
@@ -130,6 +133,7 @@ export class LeadService {
     if (!lead) {
       throw HttpError({ code: 'LEAD_NOT_FOUND' });
     }
-    await this.leadRepo.remove(lead);
+    lead.status = LeadStatus.DELETED;
+    return await this.leadRepo.save(lead);
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { In, Repository } from 'typeorm';
+import { In, Like, Not, Repository } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { findAllCourseQueryDto } from './dto/findAll-course.dto';
@@ -25,16 +25,6 @@ export class CourseService {
   async create(dto: CreateCourseDto) {
     const users = [];
     const course = this.courseRepo.create(dto);
-
-    if (dto.userIds?.length) {
-      for (let id of dto.userIds) {
-        const user = await this.userRepo.findOne({ where: { id } });
-        if (!user) {
-          throw new Error(`User with id ${id} not found`);
-        }
-        users.push(user);
-      }
-    }
 
     course.users = users;
     await this.courseRepo.save(course);
@@ -81,6 +71,10 @@ export class CourseService {
     const [result, total] = await this.courseRepo.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
+      where: {
+        name: query.name ? Like(`%${query.name.trim()}%`) : undefined,
+        status: query.status 
+      },
     });
     return { total, page, limit, data: result };
   }

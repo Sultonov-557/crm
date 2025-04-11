@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Like, Repository } from 'typeorm';
+import { Like, Not, Repository } from 'typeorm';
 import { User, UserStatus } from './entities/user.entity';
 import { UpdateUserDto } from '../user/dto/update-user.dto';
 import { HttpError } from 'src/common/exception/http.error';
@@ -35,10 +35,11 @@ export class UserService {
   }
 
   async getAll(query: GetUserQueryDto) {
-    const { limit = 10, page = 1, full_name } = query;
+    const { limit = 10, page = 1, full_name, status } = query;
     const [result, total] = await this.userRepo.findAndCount({
       where: {
         fullName: Like(`%${full_name?.trim() || ''}%`),
+        status: status || Not(UserStatus.DELETED),
       },
       skip: (page - 1) * limit,
       take: limit,
@@ -60,7 +61,7 @@ export class UserService {
     const phone_number = await this.userRepo.findOne({
       where: { phoneNumber: dto.phoneNumber },
     });
-    if(phone_number){
+    if (phone_number) {
       throw HttpError({ code: 'PHONE_NUMBER_ALREADY_EXISTS' });
     }
     for (const key in user) {

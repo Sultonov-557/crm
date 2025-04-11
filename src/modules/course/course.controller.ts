@@ -14,19 +14,20 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 import { findAllCourseQueryDto } from './dto/findAll-course.dto';
 import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
 import { AddUsersToCourseDto } from './dto/added-users-to-course.dto';
+import { Role } from 'src/common/auth/roles/role.enum';
 
 @Controller('course')
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
 
   @Post()
-  @DecoratorWrapper('Create Course')
+  @DecoratorWrapper('Create Course', true, [Role.Admin])
   create(@Body() createCourseDto: CreateCourseDto) {
     return this.courseService.create(createCourseDto);
   }
 
   @Post('course/:courseId/users')
-  @DecoratorWrapper('Add Multiple Users to Course')
+  @DecoratorWrapper('Add Multiple Users to Course', true, [Role.Admin])
   addUsersToCourse(
     @Param('courseId') courseId: string,
     @Body() dto: AddUsersToCourseDto,
@@ -47,13 +48,13 @@ export class CourseController {
   }
 
   @Patch(':id')
-  @DecoratorWrapper('Update Course')
+  @DecoratorWrapper('Update Course', true, [Role.Admin])
   update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
     return this.courseService.update(+id, updateCourseDto);
   }
 
   @Delete(':id')
-  @DecoratorWrapper('Delete Course')
+  @DecoratorWrapper('Delete Course', true, [Role.Admin])
   remove(@Param('id') id: string) {
     return this.courseService.remove(+id);
   }

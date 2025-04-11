@@ -33,11 +33,7 @@ export class CreateCourseDto {
   @IsOptional()
   @IsEnum(CourseStatus)
   status?: CourseStatus;
-
-  @ApiProperty({ type: [Number] })
-  @IsOptional()
-  userIds?: number[];
-
+  
   @ApiPropertyOptional()
   @IsOptional()
   @IsArray()

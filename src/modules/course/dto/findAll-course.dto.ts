@@ -1,17 +1,16 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsInt, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { CourseStatus } from '../entities/course.entity';
 
-export class findAllCourseQueryDto {
+export class findAllCourseQueryDto extends PaginationDto {
   @ApiPropertyOptional()
   @IsOptional()
-  @IsInt()
-  @Type(() => Number)
-  page?: number;
+  @IsEnum(CourseStatus)
+  status?: CourseStatus;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsInt()
-  @Type(() => Number)
-  limit?: number;
+  @IsNotEmpty()
+  name?: string;
 }

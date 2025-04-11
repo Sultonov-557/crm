@@ -1,11 +1,12 @@
 import { RootEntity } from 'src/common/database/root.entity';
 import { Course } from 'src/modules/course/entities/course.entity';
 import { User } from 'src/modules/user/entities/user.entity';
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 export enum LeadStatus {
   FAILED = 'CANCELED', // Bekor qilingan
   PENDING = 'PENDING', // Admin boglanishi kerak
   SOLD = 'SOLD', // Sotilgan
+  DELETED = 'DELETED', // O'chirilgan
 }
 @Entity()
 export class Lead extends RootEntity {
