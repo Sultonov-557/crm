@@ -25,7 +25,7 @@ export class SmsService {
       }
     }
 
-    let messages = dto.numbers.map((number, i) => ({
+    let messages = dto.numbers?.map((number, i) => ({
       to: number,
       text: dto.message,
     }));

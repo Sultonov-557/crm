@@ -5,7 +5,7 @@ export class SendSMSDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString({ each: true })
-  numbers: string[];
+  numbers?: string[];
 
   @ApiProperty()
   @IsNotEmpty()

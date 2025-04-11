@@ -8,6 +8,8 @@ import { findAllCourseQueryDto } from './dto/findAll-course.dto';
 import { User } from '../user/entities/user.entity';
 import { HttpError } from 'src/common/exception/http.error';
 import { TelegramService } from '../telegram/telegram.service';
+import { env } from 'src/common/config';
+import { SmsService } from '../sms/sms.service';
 
 @Injectable()
 export class CourseService {
@@ -17,6 +19,7 @@ export class CourseService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     private telegramService: TelegramService,
+    private smsService: SmsService,
   ) {}
 
   async create(dto: CreateCourseDto) {
@@ -33,12 +36,18 @@ export class CourseService {
       }
     }
 
+    course.users = users;
+    await this.courseRepo.save(course);
+
     if (dto.broadcastMessage) {
+      const url = `${env.FRONTEND_URL}/${course.id}`;
+      dto.broadcastMessage += `\n${url}`;
+
+      this.smsService.send({ message: dto.broadcastMessage });
       this.telegramService.broadcast(dto.broadcastMessage, dto.broadcastList);
     }
 
-    course.users = users;
-    return this.courseRepo.save(course);
+    return course;
   }
   async addUsersToCourse(courseId: number, userIds: number[]) {
     const course = await this.courseRepo.findOne({
