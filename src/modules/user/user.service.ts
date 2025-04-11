@@ -57,7 +57,12 @@ export class UserService {
   async update(id: number, dto: UpdateUserDto) {
     const user = await this.userRepo.findOneBy({ id });
     if (!user) return HttpError({ code: 'USER_NOT_FOUND' });
-
+    const phone_number = await this.userRepo.findOne({
+      where: { phoneNumber: dto.phoneNumber },
+    });
+    if(phone_number){
+      throw HttpError({ code: 'PHONE_NUMBER_ALREADY_EXISTS' });
+    }
     for (const key in user) {
       if (Object.prototype.hasOwnProperty.call(dto, key)) user[key] = dto[key];
     }

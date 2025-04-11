@@ -11,14 +11,14 @@ export class UpdateUserDto {
   @ApiProperty()
   @IsOptional()
   @IsNotEmpty()
-  full_name?: string;
+  fullName?: string;
 
   @ApiProperty({ example: '+998901234567' })
   @Matches(/^\+998[0-9]{9}$/, {
     message: 'Phone number must start with +998 and contain exactly 13 digits.',
   })
   @IsNotEmpty()
-  phone_number?: string;
+  phoneNumber?: string;
 
   @IsOptional()
   @IsString()

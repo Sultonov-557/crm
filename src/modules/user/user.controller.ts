@@ -25,7 +25,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  @DecoratorWrapper('Get Users', true, [Role.Admin])
+  @DecoratorWrapper('Get Users', )
   async getAll(@Query() dto: GetUserQueryDto) {
     return CoreApiResponse.success(await this.userService.getAll(dto));
   }
