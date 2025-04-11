@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsInt, IsNotEmpty, IsNotEmptyObject } from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsInt } from 'class-validator';
 
 export class AddUsersToCourseDto {
   @ApiProperty({ example: [1, 2, 3] })
   @IsArray()
   @Type(() => Number)
   @IsInt({ each: true })
-  @IsNotEmptyObject()
+  @ArrayNotEmpty()
   userIds: number[];
 }
