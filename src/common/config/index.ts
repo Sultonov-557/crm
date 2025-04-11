@@ -15,4 +15,5 @@ export const env = cleanEnv(process.env, {
   DB_USER: str(),
   DB_PASS: str(),
   DB_NAME: str(),
+  FRONTEND_URL: str(),
 });
