@@ -60,11 +60,12 @@ export class LeadService {
       });
     } else {
       user.status = UserStatus.CLIENT;
-      await this.userRepo.save(user);
     }
     const lead = this.leadRepo.create(createLeadDto);
     lead.course = course;
     lead.user = user;
+
+    await this.userRepo.save(user);
     return await this.leadRepo.save(lead);
   }
 

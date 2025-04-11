@@ -7,6 +7,8 @@ import { join } from 'path';
 import { AdminModule } from './modules/admin/admin.module';
 import { LeadModule } from './modules/lead/lead.module';
 import { CourseModule } from './modules/course/course.module';
+import { TelegramModule } from './modules/telegram/telegram.module';
+import { SmsModule } from './modules/sms/sms.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { CourseModule } from './modules/course/course.module';
     AdminModule,
     LeadModule,
     CourseModule,
+    TelegramModule,
+    SmsModule,
   ],
   controllers: [],
   providers: [],

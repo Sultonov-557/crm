@@ -4,9 +4,15 @@ import { CourseController } from './course.controller';
 import { Course } from './entities/course.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
+import { TelegramModule } from '../telegram/telegram.module';
+import { SmsModule } from '../sms/sms.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Course,User])],
+  imports: [
+    TypeOrmModule.forFeature([Course, User]),
+    TelegramModule,
+    SmsModule,
+  ],
   controllers: [CourseController],
   providers: [CourseService],
 })

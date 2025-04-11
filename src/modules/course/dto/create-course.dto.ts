@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsArray,
   IsDateString,
   IsEnum,
   IsNotEmpty,
@@ -28,8 +29,22 @@ export class CreateCourseDto {
   @IsDateString()
   @IsNotEmpty()
   end_date: Date;
-  @ApiProperty({ example: 'ACTIVE' })
+  @ApiProperty({ example: CourseStatus.INACTIVE })
   @IsOptional()
   @IsEnum(CourseStatus)
   status?: CourseStatus;
+
+  @ApiProperty({ type: [Number] })
+  @IsOptional()
+  userIds?: number[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsArray()
+  broadcastList?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNotEmpty()
+  broadcastMessage?: string;
 }
