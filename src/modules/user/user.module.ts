@@ -10,5 +10,6 @@ import { Lead } from '../lead/entities/lead.entity';
   imports: [TypeOrmModule.forFeature([User,Course,Lead])],
   controllers: [UserController],
   providers: [UserService],
+  exports: [UserService],
 })
 export class UserModule {}

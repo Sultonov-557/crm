@@ -1,25 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  Matches,
-} from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
 
-export class UpdateUserDto {
+export class CreateUserDto {
   @ApiProperty()
-  @IsOptional()
-  @IsNotEmpty()
-  full_name?: string;
+  full_name: string;
 
   @ApiProperty({ example: '+998901234567' })
   @Matches(/^\+998[0-9]{9}$/, {
     message: 'Phone number must start with +998 and contain exactly 13 digits.',
   })
+  @IsString()
   @IsNotEmpty()
-  phone_number?: string;
+  phone_number: string;
 
+  @ApiProperty()
+  course_id: number;
+
+  @ApiProperty()
   @IsOptional()
   @IsString()
   job?: string;

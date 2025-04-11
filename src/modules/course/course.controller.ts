@@ -13,6 +13,7 @@ import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { findAllCourseQueryDto } from './dto/findAll-course.dto';
 import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
+import { AddUsersToCourseDto } from './dto/added-users-to-course.dto';
 
 @Controller('course')
 export class CourseController {
@@ -24,13 +25,13 @@ export class CourseController {
     return this.courseService.create(createCourseDto);
   }
 
-  @Post('course/:courseId/user/:userId')
-  @DecoratorWrapper('Added User To Course')
-  addedUserToCourse(
+  @Post('course/:courseId/users')
+  @DecoratorWrapper('Add Multiple Users to Course')
+  addUsersToCourse(
     @Param('courseId') courseId: string,
-    @Param('userId') userId: string,
+    @Body() dto: AddUsersToCourseDto,
   ) {
-    return this.courseService.addedUserToCourse(+courseId, +userId);
+    return this.courseService.addUsersToCourse(+courseId, dto.userIds);
   }
 
   @Get()

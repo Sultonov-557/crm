@@ -5,7 +5,6 @@ import { Column, Entity, ManyToMany } from 'typeorm';
 export enum CourseStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
-  COMPLETED = 'COMPLETED',
 }
 
 @Entity()
