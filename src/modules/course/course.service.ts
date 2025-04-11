@@ -6,6 +6,7 @@ import { Course } from './entities/course.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { findAllCourseQueryDto } from './dto/findAll-course.dto';
 import { User } from '../user/entities/user.entity';
+import { HttpError } from 'src/common/exception/http.error';
 
 @Injectable()
 export class CourseService {
@@ -17,34 +18,34 @@ export class CourseService {
   ) {}
 
   async create(createCourseDto: CreateCourseDto) {
-    const users = [];
     const course = this.courseRepo.create(createCourseDto);
-
-    if (createCourseDto.userIds?.length) {
-      for (let id of createCourseDto.userIds) {
-        const user = await this.userRepo.findOne({ where: { id } });
-        if (!user) {
-          throw new Error(`User with id ${id} not found`);
-        }
-        users.push(user);
-      }
-    }
-    course.users = users;
     return this.courseRepo.save(course);
   }
-  async addedUserToCourse(courseId: number, userId: number) {
+  async addUsersToCourse(courseId: number, userIds: number[]) {
     const course = await this.courseRepo.findOne({
       where: { id: courseId },
       relations: ['users'],
     });
+  
     if (!course) {
-      throw new Error('Course not found');
+      throw HttpError({ code: 'COURSE_NOT_FOUND' });
     }
-    const user = await this.userRepo.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new Error('User not found');
+  
+    const users = await this.userRepo.findBy({
+      id: In(userIds),
+    });
+  
+    if (users.length !== userIds.length) {
+      throw HttpError({ code: 'SOME_USERS_NOT_FOUND' });
     }
-    course.users.push(user);
+  
+    const existingUserIds = course.users.map((u) => u.id);
+    const newUsers = users.filter((u) => !existingUserIds.includes(u.id));
+  
+    course.users.push(...newUsers);
+    console.log(course.users);
+    
+  
     return this.courseRepo.save(course);
   }
   
@@ -60,7 +61,7 @@ export class CourseService {
   async findOne(id: number) {
     const course = await this.courseRepo.findOne({ where: { id } });
     if (!course) {
-      throw new Error('Course not found');
+      throw HttpError({ code: 'COURSE_NOT_FOUND' });
     }
     return course;
   }
@@ -72,7 +73,7 @@ export class CourseService {
     });
 
     if (!course) {
-      throw new Error('Course not found');
+      throw HttpError({ code: 'COURSE_NOT_FOUND' });
     }
 
     for (const key in updateCourseDto) {
@@ -81,27 +82,14 @@ export class CourseService {
       }
     }
 
-    if (updateCourseDto.userIds?.length) {
-      const users = [];
-      for (const userId of updateCourseDto.userIds) {
-        const user = await this.userRepo.findOne({ where: { id: userId } });
-        if (!user) {
-          throw new Error(`User with ID ${userId} not found`);
-        }
-        users.push(user);
-      }
-      course.users = users;
-    }
-
     return this.courseRepo.save(course);
   }
 
   async remove(id: number) {
     const course = await this.findOne(id);
     if (!course) {
-      throw new Error('Course not found');
+      throw HttpError({ code: 'COURSE_NOT_FOUND' });
     }
     await this.courseRepo.remove(course);
   }
-
 }

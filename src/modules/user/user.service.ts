@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Like, Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { User, UserStatus } from './entities/user.entity';
 import { UpdateUserDto } from '../user/dto/update-user.dto';
 import { HttpError } from 'src/common/exception/http.error';
 import { GetUserQueryDto } from './dto/get-user-query.dto';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UserService {
@@ -12,10 +13,25 @@ export class UserService {
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
+  async create(dto: CreateUserDto) {
+    let user = await this.userRepo.findOne({
+      where: { phoneNumber: dto.phone_number },
+    });
+    user = this.userRepo.create({
+      ...dto,
+      status: UserStatus.INTERESTED,
+      fullName: dto.full_name,
+      phoneNumber: dto.phone_number,
+    });
+
+    return await this.userRepo.save(user);
+  }
+
   async delete(id: number) {
     const user = await this.userRepo.findOneBy({ id });
     if (!user) HttpError({ code: 'USER_NOT_FOUND' });
-    return (await this.userRepo.delete({ id: user.id })).raw;
+    user.status = UserStatus.DELETED;
+    return await this.userRepo.save(user);
   }
 
   async getAll(query: GetUserQueryDto) {

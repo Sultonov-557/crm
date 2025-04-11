@@ -1,16 +1,11 @@
 import { RootEntity } from 'src/common/database/root.entity';
 import { Course } from 'src/modules/course/entities/course.entity';
 import { User } from 'src/modules/user/entities/user.entity';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToOne,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 export enum LeadStatus {
-  INTERESTED = 'INTERESTED',
-  SINGING_UP = 'SINGING_UP',
+  FAILED = 'CANCELED', // Bekor qilingan
+  PENDING = 'PENDING', // Admin boglanishi kerak
+  SOLD = 'SOLD', // Sotilgan
 }
 @Entity()
 export class Lead extends RootEntity {
@@ -20,10 +15,10 @@ export class Lead extends RootEntity {
   @Column()
   phoneNumber: string;
 
-  @Column({type:'enum', enum: LeadStatus })
+  @Column({ type: 'enum', enum: LeadStatus })
   status: LeadStatus;
 
-  @OneToOne(() => User, (user) => user.lead)
+  @ManyToOne(() => User, (user) => user.leads, { eager: true, cascade: true })
   user: User;
 
   @ManyToOne(() => Course)

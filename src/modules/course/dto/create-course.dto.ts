@@ -28,12 +28,8 @@ export class CreateCourseDto {
   @IsDateString()
   @IsNotEmpty()
   end_date: Date;
-
+  @ApiProperty({ example: 'ACTIVE' })
   @IsOptional()
   @IsEnum(CourseStatus)
   status?: CourseStatus;
-
-  @ApiProperty({ type: [Number] })
-  @IsOptional()
-  userIds?: number[];
 }

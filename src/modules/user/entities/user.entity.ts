@@ -1,7 +1,21 @@
 import { RootEntity } from 'src/common/database/root.entity';
 import { Course } from 'src/modules/course/entities/course.entity';
 import { Lead } from 'src/modules/lead/entities/lead.entity';
-import { Entity, Column, ManyToMany, JoinTable, OneToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToMany,
+  JoinTable,
+  OneToOne,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm';
+
+export enum UserStatus {
+  INTERESTED = 'INTERESTED',
+  CLIENT = 'CLIENT',
+  DELETED = 'DELETED',
+}
 
 @Entity()
 export class User extends RootEntity {
@@ -11,7 +25,7 @@ export class User extends RootEntity {
   @Column({ unique: true })
   phoneNumber: string;
 
-  @Column({ unique: true })
+  @Column({ default: null })
   telegram_user_id: string;
 
   @Column({ nullable: true })
@@ -21,16 +35,21 @@ export class User extends RootEntity {
   position?: string;
 
   @Column({ nullable: true })
-  employers?: number;
+  employers?: string;
+
+  @Column()
+  region: string;
+
+  @Column()
+  city: string;
+
+  @Column({ type: 'enum', enum: UserStatus })
+  status: UserStatus;
 
   @ManyToMany(() => Course, (course) => course.users)
   @JoinTable()
   courses: Course[];
 
-  @OneToOne(() => Lead, (lead) => lead.user)
-  @JoinColumn()
-  lead: Lead;
-
-  @Column()
-  location: string;
+  @OneToMany(() => Lead, (lead) => lead.user)
+  leads: Lead[];
 }
