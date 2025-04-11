@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { CreateGroupDto } from './dtos/create-group.dto';
 import { Group } from './entities/group.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Like, Repository } from 'typeorm';
 import { HttpError } from 'src/common/exception/http.error';
 import { env } from 'src/common/config';
 import axios from 'axios';
+import { GetGroupQueryDto } from './dtos/get-group-query.dto';
 
 @Injectable()
 export class TelegramService {
@@ -13,8 +14,12 @@ export class TelegramService {
     @InjectRepository(Group) private readonly groupRepo: Repository<Group>,
   ) {}
 
-  async broadcast(message: string, include: string[]) {
-    const groups = await this.getGroups(include);
+  async broadcast(message: string, include?: string[]) {
+    const groups = await this.groupRepo.find({
+      where: {
+        telegramId: typeof include !== 'undefined' ? In(include) : undefined,
+      },
+    });
 
     for (let group of groups) {
       try {
@@ -35,11 +40,18 @@ export class TelegramService {
     return await this.groupRepo.save(this.groupRepo.create(dto));
   }
 
-  async getGroups(include?: string[]) {
-    const groups = await this.groupRepo.find({
-      where: { telegramId: include === undefined ? undefined : In(include) },
+  async getGroups(query: GetGroupQueryDto) {
+    const { limit = 10, page = 1, name } = query;
+    const [result, total] = await this.groupRepo.findAndCount({
+      where: {
+        name: Like(`%${name?.trim() || ''}%`),
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { createdAt: 'DESC' },
     });
-    return groups;
+
+    return { total, page, limit, data: result };
   }
 
   async deleteGroup(telegramId: string) {

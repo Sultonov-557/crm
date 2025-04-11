@@ -1,8 +1,17 @@
-import { Controller, Post, Delete, Get, Param, Body } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Delete,
+  Get,
+  Param,
+  Body,
+  Query,
+} from '@nestjs/common';
 import { TelegramService } from './telegram.service';
 import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
 import { CreateGroupDto } from './dtos/create-group.dto';
 import { Role } from 'src/common/auth/roles/role.enum';
+import { GetGroupQueryDto } from './dtos/get-group-query.dto';
 
 @Controller('telegram')
 export class TelegramController {
@@ -16,8 +25,8 @@ export class TelegramController {
 
   @Get()
   @DecoratorWrapper('Get Group IDs', false)
-  async getGroups() {
-    return this.telegramService.getGroups();
+  async getGroups(@Query() query: GetGroupQueryDto) {
+    return this.telegramService.getGroups(query);
   }
 
   @Delete(':id')
