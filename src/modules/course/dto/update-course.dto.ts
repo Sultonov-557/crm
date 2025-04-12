@@ -32,7 +32,19 @@ export class UpdateCourseDto {
   @IsDateString()
   @IsNotEmpty()
   end_date: Date;
-  
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  location: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  time: string;
+
   @ApiPropertyOptional({ example: CourseStatus.INACTIVE })
   @IsOptional()
   @IsOptional()
