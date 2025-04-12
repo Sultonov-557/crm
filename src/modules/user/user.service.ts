@@ -43,6 +43,7 @@ export class UserService {
       },
       skip: (page - 1) * limit,
       take: limit,
+      relations: { leads: true },
       order: { createdAt: 'DESC' },
     });
 
