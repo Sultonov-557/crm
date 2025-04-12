@@ -9,6 +9,7 @@ import { LeadModule } from './modules/lead/lead.module';
 import { CourseModule } from './modules/course/course.module';
 import { TelegramModule } from './modules/telegram/telegram.module';
 import { SmsModule } from './modules/sms/sms.module';
+import { StatsModule } from './modules/stats/stats.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { SmsModule } from './modules/sms/sms.module';
     CourseModule,
     TelegramModule,
     SmsModule,
+    StatsModule,
   ],
   controllers: [],
   providers: [],
