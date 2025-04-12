@@ -21,9 +21,15 @@ export class Course extends RootEntity {
   @Column()
   end_date: Date;
 
+  @Column()
+  location: string;
+  
+  @Column()
+  time: string;
+
   @Column({
     type: 'enum',
-    enum: CourseStatus
+    enum: CourseStatus,
   })
   status: CourseStatus;
 

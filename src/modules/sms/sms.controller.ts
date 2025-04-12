@@ -10,7 +10,7 @@ export class SmsController {
   constructor(private readonly smsService: SmsService) {}
 
   @Post('send')
-  @DecoratorWrapper('send sms to users', false, [Role.Admin])
+  @DecoratorWrapper('send sms to users', true, [Role.Admin])
   send(@Body() dto: SendSMSDto) {
     return this.smsService.send(dto);
   }

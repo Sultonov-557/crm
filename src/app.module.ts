@@ -10,6 +10,7 @@ import { CourseModule } from './modules/course/course.module';
 import { TelegramModule } from './modules/telegram/telegram.module';
 import { SmsModule } from './modules/sms/sms.module';
 import { StatusModule } from './modules/status/status.module';
+import { StatsModule } from './modules/stats/stats.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { StatusModule } from './modules/status/status.module';
     TelegramModule,
     SmsModule,
     StatusModule,
+    StatsModule,
   ],
   controllers: [],
   providers: [],

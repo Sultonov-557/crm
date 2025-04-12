@@ -1,5 +1,6 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
+import { IsId } from 'src/common/dtos/id.dto';
 
 export class SendSMSDto {
   @ApiPropertyOptional()
@@ -7,7 +8,16 @@ export class SendSMSDto {
   @IsString({ each: true })
   numbers?: string[];
 
-  @ApiProperty()
-  @IsNotEmpty()
-  message: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  region?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsId(true)
+  courseId: number;
 }

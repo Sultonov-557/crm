@@ -4,11 +4,15 @@ import axios from 'axios';
 import { env } from 'src/common/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
+import { Course } from '../course/entities/course.entity';
 
 @Injectable()
 export class SmsService {
-  constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private userRepo: Repository<User>,
+    @InjectRepository(Course) private courseRepo: Repository<Course>,
+  ) {}
 
   private accessToken: string;
 
@@ -25,25 +29,38 @@ export class SmsService {
       }
     }
 
-    let messages = dto.numbers?.map((number, i) => ({
-      to: number,
-      text: dto.message,
-    }));
-
-    if (!messages) {
-      const users = await this.userRepo.find();
-      messages = users.map((user, i) => ({
-        to: user.phoneNumber,
-        text: dto.message,
-      }));
+    let users: User[];
+    if (dto.numbers) {
+      users = await this.userRepo.find({
+        where: { phoneNumber: In(dto.numbers) },
+      });
+    } else {
+      users = await this.userRepo.find({
+        where: {
+          region: dto.region,
+          city: dto.city,
+        },
+      });
     }
-    for (let message of messages) {
+
+    const course = await this.courseRepo.findOne({
+      where: { id: dto.courseId },
+    });
+
+    const staticMessage = `Yangi kurs Ochilyapti: ${course.name}.
+Tavsif: ${course.description}.
+Davomiyligi: ${course.end_date},
+Boshlanish sanasi: ${course.start_date}.
+Joylashuv: ${course.location}.
+Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${env.FRONTEND_URL + course.id}.`;
+
+    for (let user of users) {
       await axios.postForm(
         'https://notify.eskiz.uz/api/message/sms/send',
         {
           from: '4546',
-          mobile_phone: message.to,
-          message: message.text,
+          mobile_phone: user.phoneNumber,
+          message: staticMessage,
         },
         { headers: { Authorization: `Bearer ${this.accessToken}` } },
       );

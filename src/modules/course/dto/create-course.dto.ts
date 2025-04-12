@@ -30,18 +30,18 @@ export class CreateCourseDto {
   @IsNotEmpty()
   end_date: Date;
 
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  location: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  time: string;
+
   @ApiProperty({ example: CourseStatus.INACTIVE })
   @IsOptional()
   @IsEnum(CourseStatus)
   status?: CourseStatus;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsArray()
-  broadcastList?: string[];
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsNotEmpty()
-  broadcastMessage?: string;
 }

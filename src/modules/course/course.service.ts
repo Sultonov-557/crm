@@ -29,14 +29,6 @@ export class CourseService {
     course.users = users;
     await this.courseRepo.save(course);
 
-    if (dto.broadcastMessage) {
-      const url = `${env.FRONTEND_URL}/${course.id}`;
-      dto.broadcastMessage += `\n${url}`;
-
-      this.smsService.send({ message: dto.broadcastMessage });
-      this.telegramService.broadcast(dto.broadcastMessage, dto.broadcastList);
-    }
-
     return course;
   }
   async addUsersToCourse(courseId: number, userIds: number[]) {
@@ -73,7 +65,7 @@ export class CourseService {
       take: limit,
       where: {
         name: query.name ? Like(`%${query.name.trim()}%`) : undefined,
-        status: query.status 
+        status: query.status,
       },
     });
     return { total, page, limit, data: result };
