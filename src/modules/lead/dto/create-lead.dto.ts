@@ -1,11 +1,11 @@
 import {
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
   Matches,
 } from 'class-validator';
-import { LeadStatus } from '../entities/lead.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateLeadDto {
@@ -16,24 +16,12 @@ export class CreateLeadDto {
 
   @ApiProperty({ example: '+998901234567' })
   @Matches(/^\+998[0-9]{9}$/, {
-    message:
-      'Phone number must start with +998 and contain exactly 13 digits.',
+    message: 'Phone number must start with +998 and contain exactly 13 digits.',
   })
   @IsNotEmpty()
   @IsString()
   phoneNumber: string;
 
-  @ApiProperty({
-    enum: LeadStatus,
-    enumName: 'LeadStatus',
-    description: 'Status must be one of: PENDING, CANCELED, SOLD',
-    example: LeadStatus.PENDING,
-  })
-  @IsOptional()
-  @IsEnum(LeadStatus, {
-    message: 'Status must be one of: PENDING, CANCELED, SOLD',
-  })
-  status?: LeadStatus;
 
   @ApiProperty()
   @IsOptional()

@@ -1,17 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
-import { Lead, LeadStatus } from './entities/lead.entity';
+import { Lead } from './entities/lead.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { Course } from '../course/entities/course.entity';
 import { HttpError } from 'src/common/exception/http.error';
 import { findAllLeadQueryDto } from './dto/findAll-lead.dto';
 import { User, UserStatus } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
 import { env } from 'src/common/config';
-import { el } from 'date-fns/locale';
-
+import { Status } from '../status/entities/status.entity';
 @Injectable()
 export class LeadService {
   constructor(
@@ -21,6 +20,8 @@ export class LeadService {
     private readonly courseRepo: Repository<Course>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    @InjectRepository(Status)
+    private readonly statusRepo: Repository<Status>,
     private readonly userService: UserService,
   ) {}
 
@@ -62,9 +63,11 @@ export class LeadService {
     } else {
       user.status = UserStatus.CLIENT;
     }
+
     const lead = this.leadRepo.create(createLeadDto);
     lead.course = course;
     lead.user = user;
+    lead.status = await this.statusRepo.findOne({ where: { id: 1 } });
 
     await this.userRepo.save(user);
     return await this.leadRepo.save(lead);
@@ -80,20 +83,14 @@ export class LeadService {
   }
 
   async findAll(query: findAllLeadQueryDto) {
-    const { limit = 10, page = 1, status } = query;
-
-    const whereConditions = {};
-
-    if (status) {
-      whereConditions['status'] = status;
-    }else { 
-      whereConditions['status'] = Not(LeadStatus.DELETED);
-    }
+    const { limit = 10, page = 1, statusId } = query;
 
     const [result, total] = await this.leadRepo.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
-      where: whereConditions,
+      where: {
+        status: { id: statusId === undefined ? undefined : In(statusId) },
+      },
     });
 
     return { total, page, limit, data: result };
@@ -109,8 +106,12 @@ export class LeadService {
 
   async update(id: number, updateLeadDto: UpdateLeadDto) {
     const lead = await this.leadRepo.findOne({ where: { id } });
-    console.log('lead', lead);
-
+    const status = await this.statusRepo.findOne({
+      where: { id: updateLeadDto.statusId },
+    });
+    if (!status) {
+      throw HttpError({ code: 'STATUS_NOT_FOUND' });
+    }
     if (!lead) {
       throw HttpError({ code: 'LEAD_NOT_FOUND' });
     }
@@ -125,6 +126,7 @@ export class LeadService {
         lead[key] = updateLeadDto[key];
     }
     lead.course = course;
+    lead.status = status;
     return await this.leadRepo.save(lead);
   }
 
@@ -133,7 +135,6 @@ export class LeadService {
     if (!lead) {
       throw HttpError({ code: 'LEAD_NOT_FOUND' });
     }
-    lead.status = LeadStatus.DELETED;
     return await this.leadRepo.save(lead);
   }
 }

@@ -7,9 +7,10 @@ import { Course } from '../course/entities/course.entity';
 import { UserService } from '../user/user.service';
 import { UserModule } from '../user/user.module';
 import { User } from '../user/entities/user.entity';
+import { Status } from '../status/entities/status.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Course, Lead, User]), UserModule],
+  imports: [TypeOrmModule.forFeature([Course, Lead, User,Status]), UserModule],
   controllers: [LeadController],
   providers: [LeadService, UserService],
 })
