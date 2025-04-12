@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserStatus } from '../user/entities/user.entity';
 import { Repository, Between } from 'typeorm';
-import { Lead, LeadStatus } from '../lead/entities/lead.entity';
+import { Lead } from '../lead/entities/lead.entity';
 import { Course } from '../course/entities/course.entity';
 import { startOfDay, startOfWeek, startOfMonth, subMonths } from 'date-fns';
+import { Status } from '../status/entities/status.entity';
 
 @Injectable()
 export class StatsService {
@@ -12,6 +13,7 @@ export class StatsService {
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Lead) private leadRepo: Repository<Lead>,
     @InjectRepository(Course) private courseRepo: Repository<Course>,
+    @InjectRepository(Status) private statusRepo: Repository<Status>,
   ) {}
 
   async get() {
@@ -61,12 +63,14 @@ export class StatsService {
   }
 
   private async getLeadStats() {
-    const statuses = Object.values(LeadStatus);
+    const statuses = await this.statusRepo.find();
     const leadCounts = await Promise.all(
-      statuses.map((status) => this.leadRepo.count({ where: { status } })),
+      statuses.map((status) =>
+        this.leadRepo.count({ where: { status: { id: status.id } } }),
+      ),
     );
     return Object.fromEntries(
-      statuses.map((status, index) => [status, leadCounts[index]]),
+      statuses.map((status, index) => [status.name, leadCounts[index]]),
     );
   }
 
