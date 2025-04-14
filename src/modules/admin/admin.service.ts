@@ -21,6 +21,7 @@ export class AdminService {
   ) {}
 
   async create(dto: CreateAdminDto) {
+    const { username, password } = dto;
     if (
       await this.adminRepo.existsBy({
         username: dto.username,
@@ -29,7 +30,7 @@ export class AdminService {
       HttpError({ code: 'BUSY_USERNAME' });
 
     const admin = this.adminRepo.create({
-      ...dto,
+      username,
       password: encrypt(dto.password),
     });
 
@@ -139,11 +140,13 @@ export class AdminService {
   async update(id: number, dto: UpdateAdminDto) {
     const admin = await this.adminRepo.findOneBy({ id });
     if (!admin) return HttpError({ code: 'ADMIN_NOT_FOUND' });
-
-    for (const key in admin) {
-      if (Object.prototype.hasOwnProperty.call(dto, key)) admin[key] = dto[key];
+    const updateAdmin = {
+      username: dto.username,
+      password: dto.password,
     }
-
+    for (const key in admin) {
+      if (Object.prototype.hasOwnProperty.call(updateAdmin, key)) admin[key] = updateAdmin[key];
+    }
     if (dto.password) {
       admin.password = encrypt(dto.password);
     }

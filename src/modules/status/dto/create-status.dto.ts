@@ -10,5 +10,5 @@ export class CreateStatusDto {
   @ApiProperty({ example: false })
   @IsOptional()
   @IsBoolean()
-  default?: boolean;
+  isDefault?: boolean;
 }

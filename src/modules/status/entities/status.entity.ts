@@ -11,5 +11,5 @@ export class Status extends RootEntity {
   leads: Lead[];
 
   @Column({ default: false })
-  default: boolean;
+  isDefault: boolean;
 }

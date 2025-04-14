@@ -14,6 +14,7 @@ export class StatusService {
     private readonly statusRepo: Repository<Status>,
   ) {}
   async create(createStatusDto: CreateStatusDto) {
+    const { name, isDefault } = createStatusDto;
     const existingStatus = await this.statusRepo.findOne({
       where: { name: createStatusDto.name },
     });
@@ -22,14 +23,17 @@ export class StatusService {
     }
 
     const status = this.statusRepo.create({
-      ...createStatusDto,
+      name,
+      isDefault,
     });
     // if (!(await this.statusRepo.findOne({ where: { default: true } }))) {
     //   status.default = true;
     // }
 
-    if (createStatusDto.default) {
-      const alreadyDefault = await this.statusRepo.findOne({ where: { default: true } });
+    if (createStatusDto.isDefault) {
+      const alreadyDefault = await this.statusRepo.findOne({
+        where: { isDefault: true },
+      });
       if (alreadyDefault) {
         throw HttpError({ code: 'Default status already exists' });
       }
@@ -58,15 +62,13 @@ export class StatusService {
 
   async update(id: number, updateStatusDto: UpdateStatusDto) {
     const status = await this.findOne(id);
-    console.log(updateStatusDto);
-    
     const existingStatus = await this.statusRepo.findOne({
       where: { name: updateStatusDto.name },
     });
     if (existingStatus && existingStatus.id !== id) {
       throw HttpError({ code: 'Status already exists' });
     }
-    
+
     const updated = this.statusRepo.merge(status, {
       name: updateStatusDto.name,
     });
@@ -76,8 +78,10 @@ export class StatusService {
     const status = await this.statusRepo.findOne({
       where: { id },
     });
-    if (status.default) {
-      throw HttpError({ code: 'The default status cannot be deleted. You can only update the default status.' });
+    if (status.isDefault) {
+      throw HttpError({
+        code: 'The default status cannot be deleted. You can only update the default status.',
+      });
     }
     const removeStatus = await this.findOne(id);
     return await this.statusRepo.remove(removeStatus);

@@ -23,10 +23,17 @@ export class CourseService {
   ) {}
 
   async create(dto: CreateCourseDto) {
-    const users = [];
-    const course = this.courseRepo.create(dto);
-
-    course.users = users;
+    const { name, status, description, start_date, end_date, location, time } =
+      dto;
+    const course = this.courseRepo.create({
+      name,
+      status,
+      description,
+      end_date,
+      location,
+      start_date,
+      time,
+    });
     await this.courseRepo.save(course);
 
     return course;
@@ -79,7 +86,9 @@ export class CourseService {
     return course;
   }
 
-  async update(id: number, updateCourseDto: UpdateCourseDto) {
+  async update(id: number, dto: UpdateCourseDto) {
+    const { description, end_date, location, name, start_date, time, status } =
+      dto;
     const course = await this.courseRepo.findOne({
       where: { id },
       relations: ['users'],
@@ -88,10 +97,18 @@ export class CourseService {
     if (!course) {
       throw HttpError({ code: 'COURSE_NOT_FOUND' });
     }
-
-    for (const key in updateCourseDto) {
-      if (Object.prototype.hasOwnProperty.call(updateCourseDto, key)) {
-        course[key] = updateCourseDto[key];
+    const updateCourse = {
+      description,
+      end_date,
+      location,
+      name,
+      start_date,
+      time,
+      status,
+    };
+    for (const key in updateCourse) {
+      if (Object.prototype.hasOwnProperty.call(updateCourse, key)) {
+        course[key] = updateCourse[key];
       }
     }
 
