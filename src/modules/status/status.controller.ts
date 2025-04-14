@@ -14,13 +14,14 @@ import { CreateStatusDto } from './dto/create-status.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { findAllStatusQueryDto } from './dto/findAll-status.dto';
 import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
+import { Role } from 'src/common/auth/roles/role.enum';
 
 @Controller('status')
 export class StatusController {
   constructor(private readonly statusService: StatusService) {}
 
   @Post()
-  @DecoratorWrapper('Create Status')
+  @DecoratorWrapper('Create Status', true, [Role.Admin])
   create(@Body() createStatusDto: CreateStatusDto) {
     return this.statusService.create(createStatusDto);
   }
@@ -38,7 +39,7 @@ export class StatusController {
   }
 
   @Patch(':id')
-  @DecoratorWrapper('Update Status')
+  @DecoratorWrapper('Update Status', true, [Role.Admin])
   update(
     @Param('id', ParseIntPipe) id: string,
     @Body() updateStatusDto: UpdateStatusDto,
@@ -47,7 +48,7 @@ export class StatusController {
   }
 
   @Delete(':id')
-  @DecoratorWrapper('Delete Status')
+  @DecoratorWrapper('Delete Status', true, [Role.Admin])
   remove(@Param('id', ParseIntPipe) id: string) {
     return this.statusService.remove(+id);
   }
