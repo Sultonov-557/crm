@@ -46,7 +46,7 @@ export class AdminController {
   }
 
   @Post()
-  @DecoratorWrapper('Admin Create')
+  @DecoratorWrapper('Admin Create', true, [Role.Admin])
   async create(@Body() dto: CreateAdminDto) {
     return CoreApiResponse.success(await this.adminService.create(dto));
   }
