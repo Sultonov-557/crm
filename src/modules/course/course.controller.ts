@@ -36,6 +36,15 @@ export class CourseController {
     return this.courseService.addUsersToCourse(+courseId, dto.userIds);
   }
 
+  @Delete('course/:courseId/users')
+  @DecoratorWrapper('Remove Multiple Users from Course', true, [Role.Admin])
+  removeUsersFromCourse(
+    @Param('courseId') courseId: string,
+    @Body() dto: AddUsersToCourseDto,
+  ) {
+    return this.courseService.removeUsersFromCourse(+courseId, dto.userIds);
+  }
+
   @Get()
   @DecoratorWrapper('Find All Course')
   findAll(@Query() query: findAllCourseQueryDto) {

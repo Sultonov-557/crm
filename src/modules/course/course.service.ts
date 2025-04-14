@@ -52,7 +52,21 @@ export class CourseService {
     const newUsers = users.filter((u) => !existingUserIds.includes(u.id));
 
     course.users.push(...newUsers);
-    console.log(course.users);
+
+    return this.courseRepo.save(course);
+  }
+
+  async removeUsersFromCourse(courseId: number, userIds: number[]) {
+    const course = await this.courseRepo.findOne({
+      where: { id: courseId },
+      relations: ['users'],
+    });
+
+    if (!course) {
+      throw HttpError({ code: 'COURSE_NOT_FOUND' });
+    }
+
+    course.users = course.users.filter((user) => !userIds.includes(user.id));
 
     return this.courseRepo.save(course);
   }
