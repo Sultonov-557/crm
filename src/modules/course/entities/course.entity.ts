@@ -1,4 +1,3 @@
-import e from 'express';
 import { RootEntity } from 'src/common/database/root.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import { Column, Entity, ManyToMany } from 'typeorm';
@@ -23,7 +22,7 @@ export class Course extends RootEntity {
 
   @Column()
   location: string;
-  
+
   @Column()
   time: string;
 

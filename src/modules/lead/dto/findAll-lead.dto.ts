@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
-import { IsArray, IsInt, IsOptional, Min } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsInt, IsOptional } from 'class-validator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 export class findAllLeadQueryDto extends PaginationDto {

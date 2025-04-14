@@ -54,7 +54,7 @@ Boshlanish sanasi: ${course.start_date}.
 Joylashuv: ${course.location}.
 Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${env.FRONTEND_URL + course.id}.`;
 
-    for (let user of users) {
+    for (const user of users) {
       await axios.postForm(
         'https://notify.eskiz.uz/api/message/sms/send',
         {
