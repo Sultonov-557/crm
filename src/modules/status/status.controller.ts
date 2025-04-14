@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { StatusService } from './status.service';
 import { CreateStatusDto } from './dto/create-status.dto';
@@ -32,19 +33,22 @@ export class StatusController {
 
   @Get(':id')
   @DecoratorWrapper('Get Status By Id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: string) {
     return this.statusService.findOne(+id);
   }
 
   @Patch(':id')
   @DecoratorWrapper('Update Status')
-  update(@Param('id') id: string, @Body() updateStatusDto: UpdateStatusDto) {
+  update(
+    @Param('id', ParseIntPipe) id: string,
+    @Body() updateStatusDto: UpdateStatusDto,
+  ) {
     return this.statusService.update(+id, updateStatusDto);
   }
 
   @Delete(':id')
   @DecoratorWrapper('Delete Status')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: string) {
     return this.statusService.remove(+id);
   }
 }

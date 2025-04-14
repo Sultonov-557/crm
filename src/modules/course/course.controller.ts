@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { CourseService } from './course.service';
 import { CreateCourseDto } from './dto/create-course.dto';
@@ -43,19 +44,22 @@ export class CourseController {
 
   @Get(':id')
   @DecoratorWrapper('Find One Course')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: string) {
     return this.courseService.findOne(+id);
   }
 
   @Patch(':id')
   @DecoratorWrapper('Update Course', true, [Role.Admin])
-  update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
+  update(
+    @Param('id', ParseIntPipe) id: string,
+    @Body() updateCourseDto: UpdateCourseDto,
+  ) {
     return this.courseService.update(+id, updateCourseDto);
   }
 
   @Delete(':id')
   @DecoratorWrapper('Delete Course', true, [Role.Admin])
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: string) {
     return this.courseService.remove(+id);
   }
 }

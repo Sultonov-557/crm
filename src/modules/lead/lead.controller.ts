@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { LeadService } from './lead.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
@@ -33,25 +34,28 @@ export class LeadController {
 
   @Get(':id')
   @DecoratorWrapper('Find One Lead')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: string) {
     return this.leadService.findOne(+id);
   }
 
   @Get('course/:courseId')
   @DecoratorWrapper('Generate Url', true, [Role.Admin])
   generateUrl(@Param('courseId') id: string) {
-    return this.leadService.generateUrl(+id);
+    return this.leadService.generateUrl(parseInt(id));
   }
 
   @Patch(':id')
   @DecoratorWrapper('Update Lead', true, [Role.Admin])
-  update(@Param('id') id: string, @Body() updateLeadDto: UpdateLeadDto) {
+  update(
+    @Param('id', ParseIntPipe) id: string,
+    @Body() updateLeadDto: UpdateLeadDto,
+  ) {
     return this.leadService.update(+id, updateLeadDto);
   }
 
   @Delete(':id')
   @DecoratorWrapper('Delete Lead ', true, [Role.Admin])
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: string) {
     return this.leadService.remove(+id);
   }
 }
