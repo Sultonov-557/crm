@@ -6,6 +6,7 @@ import {
   Param,
   Body,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { TelegramService } from './telegram.service';
 import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
@@ -31,7 +32,7 @@ export class TelegramController {
 
   @Delete(':id')
   @DecoratorWrapper('Delete Group', true, [Role.Admin])
-  async deleteGroup(@Param('id') id: string) {
+  async deleteGroup(@Param('id', ParseIntPipe) id: string) {
     return this.telegramService.deleteGroup(id);
   }
 }
