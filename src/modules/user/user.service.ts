@@ -14,11 +14,17 @@ export class UserService {
   ) {}
 
   async create(dto: CreateUserDto) {
+    const { city, full_name, phone_number, region, employers, job, position } =
+      dto;
     let user = await this.userRepo.findOne({
       where: { phoneNumber: dto.phone_number },
     });
     user = this.userRepo.create({
-      ...dto,
+      city,
+      region,
+      employers,
+      job,
+      position,
       status: UserStatus.INTERESTED,
       fullName: dto.full_name,
       phoneNumber: dto.phone_number,
@@ -57,14 +63,25 @@ export class UserService {
   }
 
   async update(id: number, dto: UpdateUserDto) {
+    const { city, region, employers, job, position, fullName, phoneNumber } =
+      dto;
     const user = await this.userRepo.findOneBy({ id });
     if (!user) return HttpError({ code: 'USER_NOT_FOUND' });
-    const phoneNumber = await this.userRepo.findOne({
+    const phoneNumber_ = await this.userRepo.findOne({
       where: { phoneNumber: dto.phoneNumber },
     });
-    if (phoneNumber) {
+    if (phoneNumber_) {
       throw HttpError({ code: 'PHONE_NUMBER_ALREADY_EXISTS' });
     }
+    dto = {
+      city,
+      region,
+      employers,
+      job,
+      position,
+      fullName,
+      phoneNumber,
+    };
     for (const key in user) {
       if (Object.prototype.hasOwnProperty.call(dto, key)) user[key] = dto[key];
     }

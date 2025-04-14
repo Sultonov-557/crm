@@ -33,11 +33,14 @@ export class TelegramService {
   }
 
   async createGroup(dto: CreateGroupDto) {
+    const { name, telegramId } = dto;
     if (await this.groupRepo.existsBy({ telegramId: dto.telegramId })) {
       throw new HttpError({ code: 'ALREADY_EXISTS' });
     }
 
-    return await this.groupRepo.save(this.groupRepo.create(dto));
+    return await this.groupRepo.save(
+      this.groupRepo.create({ name, telegramId }),
+    );
   }
 
   async getGroups(query: GetGroupQueryDto) {
