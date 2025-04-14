@@ -1,11 +1,4 @@
-import {
-  IsEnum,
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  Matches,
-} from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateLeadDto {
@@ -21,7 +14,6 @@ export class CreateLeadDto {
   @IsNotEmpty()
   @IsString()
   phoneNumber: string;
-
 
   @ApiProperty()
   @IsOptional()

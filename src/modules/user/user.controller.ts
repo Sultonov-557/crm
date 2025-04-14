@@ -1,17 +1,14 @@
 import {
   Controller,
-  Post,
   Body,
   Get,
   Param,
   ParseIntPipe,
-  Req,
   Query,
   Delete,
   Patch,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Request } from 'express';
 import { Role } from 'src/common/auth/roles/role.enum';
 import { CoreApiResponse } from 'src/common/response/core.response';
 import { GetUserQueryDto } from './dto/get-user-query.dto';
@@ -25,7 +22,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  @DecoratorWrapper('Get Users', )
+  @DecoratorWrapper('Get Users')
   async getAll(@Query() dto: GetUserQueryDto) {
     return CoreApiResponse.success(await this.userService.getAll(dto));
   }

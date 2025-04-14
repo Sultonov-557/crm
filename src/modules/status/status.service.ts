@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateStatusDto } from './dto/create-status.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Status } from './entities/status.entity';
 import { findAllStatusQueryDto } from './dto/findAll-status.dto';
@@ -29,7 +29,9 @@ export class StatusService {
     // }
 
     if (createStatusDto.default) {
-      const alreadyDefault = await this.statusRepo.findOne({ where: { default: true } });
+      const alreadyDefault = await this.statusRepo.findOne({
+        where: { default: true },
+      });
       if (alreadyDefault) {
         throw HttpError({ code: 'Default status already exists' });
       }
@@ -59,14 +61,14 @@ export class StatusService {
   async update(id: number, updateStatusDto: UpdateStatusDto) {
     const status = await this.findOne(id);
     console.log(updateStatusDto);
-    
+
     const existingStatus = await this.statusRepo.findOne({
       where: { name: updateStatusDto.name },
     });
     if (existingStatus && existingStatus.id !== id) {
       throw HttpError({ code: 'Status already exists' });
     }
-    
+
     const updated = this.statusRepo.merge(status, {
       name: updateStatusDto.name,
     });
@@ -77,7 +79,9 @@ export class StatusService {
       where: { id },
     });
     if (status.default) {
-      throw HttpError({ code: 'The default status cannot be deleted. You can only update the default status.' });
+      throw HttpError({
+        code: 'The default status cannot be deleted. You can only update the default status.',
+      });
     }
     const removeStatus = await this.findOne(id);
     return await this.statusRepo.remove(removeStatus);

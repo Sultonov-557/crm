@@ -1,15 +1,7 @@
 import { RootEntity } from 'src/common/database/root.entity';
 import { Course } from 'src/modules/course/entities/course.entity';
 import { Lead } from 'src/modules/lead/entities/lead.entity';
-import {
-  Entity,
-  Column,
-  ManyToMany,
-  JoinTable,
-  OneToOne,
-  JoinColumn,
-  OneToMany,
-} from 'typeorm';
+import { Entity, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
 
 export enum UserStatus {
   INTERESTED = 'INTERESTED',

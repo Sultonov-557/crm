@@ -21,7 +21,7 @@ export class TelegramService {
       },
     });
 
-    for (let group of groups) {
+    for (const group of groups) {
       try {
         await axios.post(
           `https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`,

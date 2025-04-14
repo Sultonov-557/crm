@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { In, Like, Not, Repository } from 'typeorm';
+import { In, Like, Repository } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { findAllCourseQueryDto } from './dto/findAll-course.dto';
 import { User } from '../user/entities/user.entity';
 import { HttpError } from 'src/common/exception/http.error';
 import { TelegramService } from '../telegram/telegram.service';
-import { env } from 'src/common/config';
 import { SmsService } from '../sms/sms.service';
 
 @Injectable()

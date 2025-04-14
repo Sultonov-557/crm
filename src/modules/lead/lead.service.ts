@@ -3,7 +3,7 @@ import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
 import { Lead } from './entities/lead.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Not, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Course } from '../course/entities/course.entity';
 import { HttpError } from 'src/common/exception/http.error';
 import { findAllLeadQueryDto } from './dto/findAll-lead.dto';
@@ -66,7 +66,6 @@ export class LeadService {
 
     const status = await this.statusRepo.findOne({ where: { default: true } });
     console.log(status);
-    
 
     const lead = this.leadRepo.create(createLeadDto);
     lead.course = course;
