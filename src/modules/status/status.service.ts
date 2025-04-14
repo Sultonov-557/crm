@@ -14,9 +14,26 @@ export class StatusService {
     private readonly statusRepo: Repository<Status>,
   ) {}
   async create(createStatusDto: CreateStatusDto) {
+    const existingStatus = await this.statusRepo.findOne({
+      where: { name: createStatusDto.name },
+    });
+    if (existingStatus) {
+      throw HttpError({ code: 'Status already exists' });
+    }
+
     const status = this.statusRepo.create({
       ...createStatusDto,
     });
+    // if (!(await this.statusRepo.findOne({ where: { default: true } }))) {
+    //   status.default = true;
+    // }
+
+    if (createStatusDto.default) {
+      const alreadyDefault = await this.statusRepo.findOne({ where: { default: true } });
+      if (alreadyDefault) {
+        throw HttpError({ code: 'Default status already exists' });
+      }
+    }
     return await this.statusRepo.save(status);
   }
 
@@ -41,15 +58,28 @@ export class StatusService {
 
   async update(id: number, updateStatusDto: UpdateStatusDto) {
     const status = await this.findOne(id);
-    const updated = this.statusRepo.merge(status, updateStatusDto);
+    console.log(updateStatusDto);
+    
+    const existingStatus = await this.statusRepo.findOne({
+      where: { name: updateStatusDto.name },
+    });
+    if (existingStatus && existingStatus.id !== id) {
+      throw HttpError({ code: 'Status already exists' });
+    }
+    
+    const updated = this.statusRepo.merge(status, {
+      name: updateStatusDto.name,
+    });
     return await this.statusRepo.save(updated);
   }
-
   async remove(id: number) {
-    if (id == 1) {
-      throw HttpError({ code: 'Status is not deletable' });
+    const status = await this.statusRepo.findOne({
+      where: { id },
+    });
+    if (status.default) {
+      throw HttpError({ code: 'The default status cannot be deleted. You can only update the default status.' });
     }
-    const status = await this.findOne(id);
-    return await this.statusRepo.remove(status);
+    const removeStatus = await this.findOne(id);
+    return await this.statusRepo.remove(removeStatus);
   }
 }

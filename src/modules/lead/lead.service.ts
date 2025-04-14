@@ -64,10 +64,14 @@ export class LeadService {
       user.status = UserStatus.CLIENT;
     }
 
+    const status = await this.statusRepo.findOne({ where: { default: true } });
+    console.log(status);
+    
+
     const lead = this.leadRepo.create(createLeadDto);
     lead.course = course;
     lead.user = user;
-    lead.status = await this.statusRepo.findOne({ where: { id: 1 } });
+    lead.status = status;
 
     await this.userRepo.save(user);
     return await this.leadRepo.save(lead);
@@ -135,6 +139,7 @@ export class LeadService {
     if (!lead) {
       throw HttpError({ code: 'LEAD_NOT_FOUND' });
     }
+    lead.isDeleted = true;
     return await this.leadRepo.save(lead);
   }
 }

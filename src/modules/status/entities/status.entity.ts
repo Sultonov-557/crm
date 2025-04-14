@@ -9,4 +9,7 @@ export class Status extends RootEntity {
 
   @OneToMany(() => Lead, (lead) => lead.status)
   leads: Lead[];
+
+  @Column({ default: false })
+  default: boolean;
 }

@@ -11,6 +11,9 @@ export class Lead extends RootEntity {
   @Column()
   phoneNumber: string;
 
+  @Column({ default: false })
+  isDeleted: boolean;
+
   @ManyToOne(() => User, (user) => user.leads, { eager: true, cascade: true })
   user: User;
 
