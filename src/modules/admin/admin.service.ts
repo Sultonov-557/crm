@@ -13,6 +13,10 @@ import { RefreshAdminDto } from './dto/refresh-admin.dto';
 import { Role } from 'src/common/auth/roles/role.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Admin } from './entities/admin.entity';
+import {
+  getTokenVersion,
+  incrementTokenVersion,
+} from 'src/common/auth/token-version.store';
 
 @Injectable()
 export class AdminService {
@@ -85,13 +89,24 @@ export class AdminService {
     const passwordMatch = dto.password === decrypt(admin.password);
     if (!passwordMatch) HttpError({ code: 'WRONG_PASSWORD' });
 
+    incrementTokenVersion(admin.id.toString());
+    const tokenVersion = getTokenVersion(admin.id.toString());
+
     const [accessToken, refreshToken] = [
-      sign({ id: admin.id, role: Role.Admin }, env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '2h',
-      }),
-      sign({ id: admin.id, role: Role.Admin }, env.REFRESH_TOKEN_SECRET, {
-        expiresIn: '1d',
-      }),
+      sign(
+        { id: admin.id, role: Role.Admin, tokenVersion },
+        env.ACCESS_TOKEN_SECRET,
+        {
+          expiresIn: '2h',
+        },
+      ),
+      sign(
+        { id: admin.id, role: Role.Admin, tokenVersion },
+        env.REFRESH_TOKEN_SECRET,
+        {
+          expiresIn: '1d',
+        },
+      ),
     ];
 
     await this.adminRepo.update(
@@ -102,7 +117,6 @@ export class AdminService {
     );
 
     return {
-      ...admin,
       accessToken,
       refreshToken,
     };
@@ -111,6 +125,7 @@ export class AdminService {
   async logout(id: number) {
     const admin = await this.adminRepo.findOneBy({ id });
     if (!admin) HttpError({ code: 'ADMIN_NOT_FOUND' });
+    incrementTokenVersion(id.toString());
     admin.refreshToken = null;
     return await this.adminRepo.save(admin);
   }
@@ -120,6 +135,7 @@ export class AdminService {
     const adminData = verify(token, env.REFRESH_TOKEN_SECRET) as {
       id: number;
       role: string;
+      tokenVersion: string;
     };
     if (!adminData) HttpError({ code: 'LOGIN_FAILED' });
 
@@ -129,12 +145,17 @@ export class AdminService {
     const isRefTokenMatch = await compare(dto.refreshToken, admin.refreshToken);
     if (!isRefTokenMatch) HttpError({ code: 'accessToken' });
 
+    const currentVersion = getTokenVersion(admin.id.toString());
+    if (adminData.tokenVersion !== currentVersion) {
+      HttpError({ code: 'TOKEN_INVALIDATED' });
+    }
+
     const accessToken = sign(
-      { id: admin.id, role: Role.Admin },
+      { id: admin.id, role: Role.Admin, tokenVersion: currentVersion },
       env.ACCESS_TOKEN_SECRET,
       { expiresIn: '2h' },
     );
-    return { ...admin, accessToken };
+    return { accessToken };
   }
 
   async update(id: number, dto: UpdateAdminDto) {
@@ -143,9 +164,10 @@ export class AdminService {
     const updateAdmin = {
       username: dto.username,
       password: dto.password,
-    }
+    };
     for (const key in admin) {
-      if (Object.prototype.hasOwnProperty.call(updateAdmin, key)) admin[key] = updateAdmin[key];
+      if (Object.prototype.hasOwnProperty.call(updateAdmin, key))
+        admin[key] = updateAdmin[key];
     }
     if (dto.password) {
       admin.password = encrypt(dto.password);
