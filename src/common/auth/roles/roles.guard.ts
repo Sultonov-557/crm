@@ -6,6 +6,7 @@ import { HttpError } from 'src/common/exception/http.error';
 import { Role } from './role.enum';
 import { ROLES_KEY } from './roles.decorator';
 import { env } from 'src/common/config';
+import { getTokenVersion } from '../token-version.store';
 
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
@@ -18,16 +19,23 @@ export class RolesGuard implements CanActivate {
         ROLES_KEY,
         [context.getHandler(), context.getClass()],
       );
+
       const request = context.switchToHttp().getRequest();
       let bearerToken = request.headers['authorization'];
 
       if (!bearerToken) {
         HttpError({ code: 'BEARER_TOKEN_NOT_PROVIDED' });
       }
-      bearerToken = bearerToken.split(' ')[1];
 
+      bearerToken = bearerToken.split(' ')[1];
       const validUser: any = verify(bearerToken, env.ACCESS_TOKEN_SECRET);
       if (!validUser) HttpError({ code: 'LOGIN_FAILED' });
+
+      const storedVersion = getTokenVersion(validUser.id);
+
+      if (validUser.tokenVersion !== storedVersion) {
+        HttpError({ code: 'TOKEN_INVALIDATED' });
+      }
 
       request.user = { ...validUser };
       return requiredRoles?.includes(validUser.role);

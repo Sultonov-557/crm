@@ -6,7 +6,8 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { ApiSwaggerOptions } from './common/swagger/config.swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: { origin: '*' } });
+
   app.setGlobalPrefix('/api');
 
   app.useGlobalPipes(
