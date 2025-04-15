@@ -145,6 +145,8 @@ export class AdminService {
     const isRefTokenMatch = await compare(dto.refreshToken, admin.refreshToken);
     if (!isRefTokenMatch) HttpError({ code: 'accessToken' });
 
+    incrementTokenVersion(adminData.id.toString());
+
     const currentVersion = getTokenVersion(admin.id.toString());
     if (adminData.tokenVersion !== currentVersion) {
       HttpError({ code: 'TOKEN_INVALIDATED' });

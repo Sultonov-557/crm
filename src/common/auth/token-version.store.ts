@@ -21,7 +21,6 @@ export function getTokenVersion(userId: string): string {
 
 export function incrementTokenVersion(userId: string): string {
   const store = loadTokenVersions();
-  const current = store[userId] ?? 0;
   const updated = randomUUID();
   store[userId] = updated;
   cache = store;
