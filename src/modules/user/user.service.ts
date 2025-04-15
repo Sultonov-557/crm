@@ -6,11 +6,13 @@ import { HttpError } from 'src/common/exception/http.error';
 import { GetUserQueryDto } from './dto/get-user-query.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
+import { Lead } from '../lead/entities/lead.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
+    @InjectRepository(Lead) private readonly leadRepo: Repository<Lead>,
   ) {}
 
   async create(dto: CreateUserDto) {
@@ -49,15 +51,21 @@ export class UserService {
       },
       skip: (page - 1) * limit,
       take: limit,
-      relations: { leads: true },
       order: { createdAt: 'DESC' },
+      relations: { leads: true },
     });
-
-    return { total, page, limit, data: result };
+    const results = result.map((user) => ({
+      ...user,
+      leads: user.leads.length,
+    }));
+    return { total, page, limit, data: results };
   }
 
   async getOne(id: number) {
-    const user = await this.userRepo.findOne({ where: { id } });
+    const user = await this.userRepo.findOne({
+      where: { id },
+      relations: { leads: true },
+    });
     if (!user) HttpError({ code: 'USER_NOT_FOUND' });
     return user;
   }
@@ -67,11 +75,13 @@ export class UserService {
       dto;
     const user = await this.userRepo.findOneBy({ id });
     if (!user) return HttpError({ code: 'USER_NOT_FOUND' });
-    const phoneNumber_ = await this.userRepo.findOne({
-      where: { phoneNumber: dto.phoneNumber },
-    });
-    if (phoneNumber_) {
-      throw HttpError({ code: 'PHONE_NUMBER_ALREADY_EXISTS' });
+    if (dto.phoneNumber && dto.phoneNumber !== user.phoneNumber) {
+      const phoneNumber_ = await this.userRepo.findOne({
+        where: { phoneNumber: dto.phoneNumber },
+      });
+      if (phoneNumber_) {
+        throw HttpError({ code: 'PHONE_NUMBER_ALREADY_EXISTS' });
+      }
     }
     dto = {
       city,

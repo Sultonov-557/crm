@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { CreateStatusDto } from './dto/create-status.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { Repository } from 'typeorm';
@@ -8,11 +8,17 @@ import { findAllStatusQueryDto } from './dto/findAll-status.dto';
 import { HttpError } from 'src/common/exception/http.error';
 
 @Injectable()
-export class StatusService {
+export class StatusService implements OnApplicationBootstrap {
   constructor(
     @InjectRepository(Status)
     private readonly statusRepo: Repository<Status>,
   ) {}
+  async onApplicationBootstrap() {
+    if (!(await this.statusRepo.findOne({ where: { isDefault: true } }))) {
+      await this.create({ name: 'NewLead', isDefault: true });
+    }
+  }
+
   async create(createStatusDto: CreateStatusDto) {
     const { name, isDefault } = createStatusDto;
     const existingStatus = await this.statusRepo.findOne({
@@ -35,7 +41,8 @@ export class StatusService {
         where: { isDefault: true },
       });
       if (alreadyDefault) {
-        throw HttpError({ code: 'Default status already exists' });
+        alreadyDefault.isDefault = false;
+        await this.statusRepo.save(alreadyDefault);
       }
     }
     return await this.statusRepo.save(status);
@@ -67,6 +74,18 @@ export class StatusService {
     });
     if (existingStatus && existingStatus.id !== id) {
       throw HttpError({ code: 'Status already exists' });
+    }
+    if (updateStatusDto.isDefault) {
+      const alreadyDefault = await this.statusRepo.findOne({
+        where: { isDefault: true },
+      });
+      if (alreadyDefault) {
+        alreadyDefault.isDefault = false;
+        status.isDefault = true;
+        await this.statusRepo.save(alreadyDefault);
+        
+        await this.statusRepo.save(status);
+      }
     }
 
     const updated = this.statusRepo.merge(status, {

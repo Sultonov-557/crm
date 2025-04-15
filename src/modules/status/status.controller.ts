@@ -28,7 +28,7 @@ export class StatusController {
 
   @Get()
   @DecoratorWrapper('Get All Status')
-  findAll(@Query() query: findAllStatusQueryDto) {
+  findAll(@Query() query: findAllStatusQueryDto) { 
     return this.statusService.findAll(query);
   }
 
