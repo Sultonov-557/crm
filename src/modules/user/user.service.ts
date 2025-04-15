@@ -71,8 +71,16 @@ export class UserService {
   }
 
   async update(id: number, dto: UpdateUserDto) {
-    const { city, region, employers, job, position, fullName, phoneNumber } =
-      dto;
+    const {
+      city,
+      region,
+      employers,
+      job,
+      position,
+      fullName,
+      phoneNumber,
+      status,
+    } = dto;
     const user = await this.userRepo.findOneBy({ id });
     if (!user) return HttpError({ code: 'USER_NOT_FOUND' });
     if (dto.phoneNumber && dto.phoneNumber !== user.phoneNumber) {
@@ -84,6 +92,7 @@ export class UserService {
       }
     }
     dto = {
+      status,
       city,
       region,
       employers,
