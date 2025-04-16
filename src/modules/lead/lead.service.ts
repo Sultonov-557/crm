@@ -64,12 +64,14 @@ export class LeadService {
       user.status = UserStatus.CLIENT;
     }
 
-    const status = await this.statusRepo.findOne({ where: { isDefault: true } });
+    const status = await this.statusRepo.findOne({
+      where: { isDefault: true },
+    });
     console.log(status);
 
     const lead = this.leadRepo.create({
       fullName,
-      phoneNumber
+      phoneNumber,
     });
     lead.course = course;
     lead.user = user;
@@ -97,6 +99,7 @@ export class LeadService {
       where: {
         status: { id: statusId === undefined ? undefined : In(statusId) },
       },
+      relations: { course: true },
     });
 
     return { total, page, limit, data: result };
@@ -111,7 +114,7 @@ export class LeadService {
   }
 
   async update(id: number, updateLeadDto: UpdateLeadDto) {
-    const {fullName,phoneNumber} = updateLeadDto;
+    const { fullName, phoneNumber } = updateLeadDto;
     const lead = await this.leadRepo.findOne({ where: { id } });
     const status = await this.statusRepo.findOne({
       where: { id: updateLeadDto.statusId },
@@ -131,7 +134,7 @@ export class LeadService {
     const updateDto = {
       fullName,
       phoneNumber,
-    }
+    };
     for (const key in lead) {
       if (Object.prototype.hasOwnProperty.call(updateDto, key))
         lead[key] = updateDto[key];

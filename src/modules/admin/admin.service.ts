@@ -135,6 +135,7 @@ export class AdminService {
     );
 
     return {
+      username: admin.username,
       accessToken,
       refreshToken,
     };

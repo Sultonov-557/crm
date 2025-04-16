@@ -49,7 +49,7 @@ export class StatusService implements OnApplicationBootstrap {
   }
 
   async findAll(query: findAllStatusQueryDto) {
-    const { page, limit } = query;
+    const { page = 1, limit = 10 } = query;
     const [result, total] = await this.statusRepo.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
@@ -83,7 +83,7 @@ export class StatusService implements OnApplicationBootstrap {
         alreadyDefault.isDefault = false;
         status.isDefault = true;
         await this.statusRepo.save(alreadyDefault);
-        
+
         await this.statusRepo.save(status);
       }
     }

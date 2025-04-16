@@ -18,7 +18,7 @@ export class User extends RootEntity {
   phoneNumber: string;
 
   @Column({ default: null })
-  telegram_user_id: string;
+  telegramUserId: string;
 
   @Column({ nullable: true })
   job?: string;
