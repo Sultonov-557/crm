@@ -7,6 +7,7 @@ import { Role } from './role.enum';
 import { ROLES_KEY } from './roles.decorator';
 import { env } from 'src/common/config';
 import { getTokenVersion } from '../token-version.store';
+import { getRefreshTokenVersion } from '../refresh-token-version.store';
 
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
@@ -31,13 +32,17 @@ export class RolesGuard implements CanActivate {
       const validUser: any = verify(bearerToken, env.ACCESS_TOKEN_SECRET);
       if (!validUser) HttpError({ code: 'LOGIN_FAILED' });
 
-      const storedVersion = getTokenVersion(validUser.id);
+      const storedTokenVersion = getTokenVersion(validUser.id);
+      const storedRefreshTokenVersion = getRefreshTokenVersion(validUser.id);
 
-      if (validUser.tokenVersion !== storedVersion) {
+      if (validUser.tokenVersion !== storedTokenVersion) {
         HttpError({ code: 'TOKEN_INVALIDATED' });
       }
 
-      request.user = { ...validUser };
+      request.user = {
+        ...validUser,
+        refreshTokenVersion: storedRefreshTokenVersion,
+      };
       return requiredRoles?.includes(validUser.role);
     } catch (error) {
       if (error.message == 'jwt expired') HttpError({ code: 'JWT_EXPIRED' });

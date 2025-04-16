@@ -17,6 +17,10 @@ import {
   getTokenVersion,
   incrementTokenVersion,
 } from 'src/common/auth/token-version.store';
+import {
+  getRefreshTokenVersion,
+  incrementRefreshTokenVersion,
+} from 'src/common/auth/refresh-token-version.store';
 
 @Injectable()
 export class AdminService {
@@ -38,13 +42,24 @@ export class AdminService {
       password: encrypt(dto.password),
     });
 
+    const tokenVersion = getTokenVersion(admin.id.toString());
+    const refreshTokenVersion = getRefreshTokenVersion(admin.id.toString());
+
     const [accessToken, refreshToken] = [
-      sign({ id: admin.id, role: Role.Admin }, env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '2h',
-      }),
-      sign({ id: admin.id, role: Role.Admin }, env.REFRESH_TOKEN_SECRET, {
-        expiresIn: '1d',
-      }),
+      sign(
+        { id: admin.id, role: Role.Admin, tokenVersion },
+        env.ACCESS_TOKEN_SECRET,
+        {
+          expiresIn: '2h',
+        },
+      ),
+      sign(
+        { id: admin.id, role: Role.Admin, refreshTokenVersion },
+        env.REFRESH_TOKEN_SECRET,
+        {
+          expiresIn: '1d',
+        },
+      ),
     ];
     admin.refreshToken = await hash(refreshToken, 10);
     await this.adminRepo.save(admin);
@@ -90,7 +105,10 @@ export class AdminService {
     if (!passwordMatch) HttpError({ code: 'WRONG_PASSWORD' });
 
     incrementTokenVersion(admin.id.toString());
+    incrementRefreshTokenVersion(admin.id.toString());
+
     const tokenVersion = getTokenVersion(admin.id.toString());
+    const refreshTokenVersion = getRefreshTokenVersion(admin.id.toString());
 
     const [accessToken, refreshToken] = [
       sign(
@@ -101,7 +119,7 @@ export class AdminService {
         },
       ),
       sign(
-        { id: admin.id, role: Role.Admin, tokenVersion },
+        { id: admin.id, role: Role.Admin, refreshTokenVersion },
         env.REFRESH_TOKEN_SECRET,
         {
           expiresIn: '1d',
@@ -126,6 +144,7 @@ export class AdminService {
     const admin = await this.adminRepo.findOneBy({ id });
     if (!admin) HttpError({ code: 'ADMIN_NOT_FOUND' });
     incrementTokenVersion(id.toString());
+    incrementRefreshTokenVersion(id.toString());
     admin.refreshToken = null;
     return await this.adminRepo.save(admin);
   }
@@ -135,7 +154,7 @@ export class AdminService {
     const adminData = verify(token, env.REFRESH_TOKEN_SECRET) as {
       id: number;
       role: string;
-      tokenVersion: string;
+      refreshTokenVersion: string;
     };
     if (!adminData) HttpError({ code: 'LOGIN_FAILED' });
 
@@ -145,15 +164,16 @@ export class AdminService {
     const isRefTokenMatch = await compare(dto.refreshToken, admin.refreshToken);
     if (!isRefTokenMatch) HttpError({ code: 'accessToken' });
 
-    incrementTokenVersion(adminData.id.toString());
-
-    const currentVersion = getTokenVersion(admin.id.toString());
-    if (adminData.tokenVersion !== currentVersion) {
+    const currentRefreshVersion = getRefreshTokenVersion(admin.id.toString());
+    if (adminData.refreshTokenVersion !== currentRefreshVersion) {
       HttpError({ code: 'TOKEN_INVALIDATED' });
     }
 
+    incrementTokenVersion(admin.id.toString());
+    const currentTokenVersion = getTokenVersion(admin.id.toString());
+
     const accessToken = sign(
-      { id: admin.id, role: Role.Admin, tokenVersion: currentVersion },
+      { id: admin.id, role: Role.Admin, tokenVersion: currentTokenVersion },
       env.ACCESS_TOKEN_SECRET,
       { expiresIn: '2h' },
     );
