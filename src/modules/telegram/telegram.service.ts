@@ -17,6 +17,16 @@ export class TelegramService {
     @InjectRepository(Course) private readonly courseRepo: Repository<Course>,
   ) {}
 
+  private formatDate(date: Date): string {
+    return new Date(date).toLocaleDateString('uz-UZ', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
   async sendMessage(dto: SendMessageDto) {
     const course = await this.courseRepo.findOne({
       where: { id: +dto.courseId },
@@ -28,8 +38,8 @@ export class TelegramService {
 
     const message = `Yangi kurs Ochilyapti: ${course.name}.
 Tavsif: ${course.description}.
-Davomiyligi: ${course.end_date},
-Boshlanish sanasi: ${course.start_date}.
+Davomiyligi: ${this.formatDate(course.end_date)},
+Boshlanish sanasi: ${this.formatDate(course.start_date)}.
 Joylashuv: ${course.location}.
 Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${env.FRONTEND_URL + course.id}.`;
 
