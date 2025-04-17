@@ -7,12 +7,34 @@ import { HttpError } from 'src/common/exception/http.error';
 import { env } from 'src/common/config';
 import axios from 'axios';
 import { GetGroupQueryDto } from './dtos/get-group-query.dto';
+import { SendMessageDto } from './dtos/send-message.dto';
+import { Course } from '../course/entities/course.entity';
 
 @Injectable()
 export class TelegramService {
   constructor(
     @InjectRepository(Group) private readonly groupRepo: Repository<Group>,
+    @InjectRepository(Course) private readonly courseRepo: Repository<Course>,
   ) {}
+
+  async sendMessage(dto: SendMessageDto) {
+    const course = await this.courseRepo.findOne({
+      where: { id: +dto.courseId },
+    });
+
+    if (!course) {
+      throw new HttpError({ code: 'COURSE_NOT_FOUND' });
+    }
+
+    const message = `Yangi kurs Ochilyapti: ${course.name}.
+Tavsif: ${course.description}.
+Davomiyligi: ${course.end_date},
+Boshlanish sanasi: ${course.start_date}.
+Joylashuv: ${course.location}.
+Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${env.FRONTEND_URL + course.id}.`;
+
+    return this.broadcast(message, dto.telegramIds);
+  }
 
   async broadcast(message: string, include?: string[]) {
     const groups = await this.groupRepo.find({

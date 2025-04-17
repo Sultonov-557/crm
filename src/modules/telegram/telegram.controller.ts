@@ -13,6 +13,7 @@ import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
 import { CreateGroupDto } from './dtos/create-group.dto';
 import { Role } from 'src/common/auth/roles/role.enum';
 import { GetGroupQueryDto } from './dtos/get-group-query.dto';
+import { SendMessageDto } from './dtos/send-message.dto';
 
 @Controller('telegram')
 export class TelegramController {
@@ -22,6 +23,12 @@ export class TelegramController {
   @DecoratorWrapper('Create Group', true, [Role.Admin])
   async createGroup(@Body() dto: CreateGroupDto) {
     return this.telegramService.createGroup(dto);
+  }
+
+  @Post('send')
+  @DecoratorWrapper('Send Message', true, [Role.Admin])
+  async sendMessage(@Body() dto: SendMessageDto) {
+    return this.telegramService.sendMessage(dto);
   }
 
   @Get()
