@@ -4,7 +4,13 @@ import { User, UserStatus } from '../user/entities/user.entity';
 import { Repository, Between } from 'typeorm';
 import { Lead } from '../lead/entities/lead.entity';
 import { Course } from '../course/entities/course.entity';
-import { startOfDay, startOfWeek, startOfMonth, subMonths } from 'date-fns';
+import {
+  startOfDay,
+  startOfWeek,
+  startOfMonth,
+  subMonths,
+  subDays,
+} from 'date-fns';
 import { Status } from '../status/entities/status.entity';
 
 @Injectable()
@@ -33,6 +39,8 @@ export class StatsService {
       leadStats,
       courseStats,
       regionalStats,
+      dailyStats,
+      conversionStats,
     ] = await Promise.all([
       this.userRepo.count(),
       this.userRepo.count({ where: { status: UserStatus.CLIENT } }),
@@ -45,6 +53,8 @@ export class StatsService {
       this.getLeadStats(),
       this.getCourseStats(),
       this.getRegionalStats(),
+      this.getDailyStats(),
+      this.getConversionStats(),
     ]);
 
     return {
@@ -56,9 +66,13 @@ export class StatsService {
         newThisMonth: newUsersThisMonth,
         newLastMonth: newUsersLastMonth,
       },
-      leads: leadStats,
+      leads: {
+        ...leadStats,
+        conversion: conversionStats,
+      },
       courses: courseStats,
       regional: regionalStats,
+      daily: dailyStats,
     };
   }
 
@@ -86,9 +100,26 @@ export class StatsService {
         leads: await this.leadRepo.count({
           where: { course: { id: course.id } },
         }),
+        completionRate: await this.calculateCourseCompletionRate(course.id),
       })),
     );
     return stats;
+  }
+
+  private async calculateCourseCompletionRate(courseId: number) {
+    const totalUsers = await this.userRepo.count({
+      where: { courses: { id: courseId } },
+    });
+    if (totalUsers === 0) return 0;
+
+    const completedUsers = await this.userRepo.count({
+      where: {
+        courses: { id: courseId },
+        status: UserStatus.CLIENT,
+      },
+    });
+
+    return (completedUsers / totalUsers) * 100;
   }
 
   private async getRegionalStats() {
@@ -97,14 +128,66 @@ export class StatsService {
       .select('user.region')
       .addSelect('COUNT(DISTINCT user.id)', 'userCount')
       .addSelect('COUNT(DISTINCT lead.id)', 'leadCount')
+      .addSelect(
+        'COUNT(DISTINCT CASE WHEN user.status = :status THEN user.id END)',
+        'activeUsers',
+      )
       .leftJoin('lead', 'lead', 'lead.userId = user.id')
+      .setParameter('status', UserStatus.CLIENT)
       .groupBy('user.region')
       .getRawMany();
 
     return regions.map((region) => ({
       region: region.region,
       users: parseInt(region.userCount),
+      activeUsers: parseInt(region.activeUsers),
       leads: parseInt(region.leadCount),
+      conversionRate:
+        region.userCount > 0
+          ? (parseInt(region.activeUsers) / parseInt(region.userCount)) * 100
+          : 0,
     }));
+  }
+
+  private async getDailyStats() {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = subDays(new Date(), i);
+      return {
+        date: startOfDay(date),
+        nextDate: startOfDay(subDays(date, -1)),
+      };
+    }).reverse();
+
+    const stats = await Promise.all(
+      last7Days.map(async ({ date, nextDate }) => ({
+        date: date.toISOString().split('T')[0],
+        newUsers: await this.userRepo.count({
+          where: { createdAt: Between(date, nextDate) },
+        }),
+        newLeads: await this.leadRepo.count({
+          where: { createdAt: Between(date, nextDate) },
+        }),
+        activeUsers: await this.userRepo.count({
+          where: {
+            status: UserStatus.CLIENT,
+          },
+        }),
+      })),
+    );
+
+    return stats;
+  }
+
+  private async getConversionStats() {
+    const totalLeads = await this.leadRepo.count();
+    const convertedLeads = await this.leadRepo.count({
+      where: { user: { status: UserStatus.CLIENT } },
+    });
+
+    return {
+      total: totalLeads,
+      converted: convertedLeads,
+      rate: totalLeads > 0 ? (convertedLeads / totalLeads) * 100 : 0,
+    };
   }
 }

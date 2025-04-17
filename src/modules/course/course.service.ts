@@ -86,13 +86,16 @@ export class CourseService {
       where: {
         name: query.name ? Like(`%${query.name.trim()}%`) : undefined,
         status: query.status,
+        isDeleted: false,
       },
     });
     return { total, page, limit, data: result };
   }
 
   async findOne(id: number) {
-    const course = await this.courseRepo.findOne({ where: { id } });
+    const course = await this.courseRepo.findOne({
+      where: { id, isDeleted: false },
+    });
     if (!course) {
       throw HttpError({ code: 'COURSE_NOT_FOUND' });
     }
@@ -133,6 +136,8 @@ export class CourseService {
     if (!course) {
       throw HttpError({ code: 'COURSE_NOT_FOUND' });
     }
-    await this.courseRepo.remove(course);
+
+    course.isDeleted = true;
+    await this.courseRepo.save(course);
   }
 }
