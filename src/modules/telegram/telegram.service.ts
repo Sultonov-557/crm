@@ -9,6 +9,7 @@ import axios from 'axios';
 import { GetGroupQueryDto } from './dtos/get-group-query.dto';
 import { SendMessageDto } from './dtos/send-message.dto';
 import { Course } from '../course/entities/course.entity';
+import { UpdateGroupDto } from './dtos/update-group.dto';
 
 @Injectable()
 export class TelegramService {
@@ -89,9 +90,19 @@ Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${env.FRONTEND_URL + course.id
     return { total, page, limit, data: result };
   }
 
-  async deleteGroup(telegramId: string) {
-    const group = await this.groupRepo.findOneBy({ telegramId });
+  async updateGroup(id: number, dto: UpdateGroupDto) {
+    const group = await this.groupRepo.findOneBy({ id });
     if (!group) throw new HttpError({ code: 'GROUP_NOT_FOUND' });
-    return await this.groupRepo.delete({ telegramId });
+
+    group.name = dto.name;
+    group.telegramId = dto.telegramId;
+
+    return await this.groupRepo.save(group);
+  }
+
+  async deleteGroup(id: number) {
+    const group = await this.groupRepo.findOneBy({ id });
+    if (!group) throw new HttpError({ code: 'GROUP_NOT_FOUND' });
+    return await this.groupRepo.delete({ id });
   }
 }
