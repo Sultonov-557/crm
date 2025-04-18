@@ -14,7 +14,7 @@ export class Lead extends RootEntity {
   @Column({ default: false })
   isDeleted: boolean;
 
-  @ManyToOne(() => User, (user) => user.leads, { eager: true, cascade: true })
+  @ManyToOne(() => User, (user) => user.leads, { cascade: true })
   user: User;
 
   @ManyToOne(() => Course)

@@ -7,20 +7,31 @@ import { GetUserQueryDto } from './dto/get-user-query.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Lead } from '../lead/entities/lead.entity';
+import { Course } from '../course/entities/course.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     @InjectRepository(Lead) private readonly leadRepo: Repository<Lead>,
+    @InjectRepository(Course) private readonly courseRepo: Repository<Course>,
   ) {}
 
   async create(dto: CreateUserDto) {
-    const { city, full_name, phone_number, region, employers, job, position } =
-      dto;
+    const {
+      city,
+      full_name,
+      phone_number,
+      region,
+      employers,
+      job,
+      position,
+      course_id,
+    } = dto;
     let user = await this.userRepo.findOne({
       where: { phoneNumber: dto.phone_number },
     });
+    const course = await this.courseRepo.findOne({ where: { id: course_id } });
     user = this.userRepo.create({
       city,
       region,
@@ -31,7 +42,7 @@ export class UserService {
       fullName: dto.full_name,
       phoneNumber: dto.phone_number,
     });
-
+    user.courses = [course];
     return await this.userRepo.save(user);
   }
 

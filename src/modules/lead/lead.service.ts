@@ -39,6 +39,7 @@ export class LeadService {
 
     let user = await this.userRepo.findOne({
       where: { phoneNumber },
+      relations: { courses: true },
     });
 
     const course = await this.courseRepo.findOne({
@@ -61,15 +62,20 @@ export class LeadService {
         course_id: courseId,
       });
     } else {
+      user.courses.push(course);
       user.status = UserStatus.CLIENT;
     }
+    console.log(user);
+    
 
-    const status = await this.statusRepo.findOne({ where: { isDefault: true } });
+    const status = await this.statusRepo.findOne({
+      where: { isDefault: true },
+    });
     console.log(status);
 
     const lead = this.leadRepo.create({
       fullName,
-      phoneNumber
+      phoneNumber,
     });
     lead.course = course;
     lead.user = user;
@@ -99,11 +105,15 @@ export class LeadService {
       },
     });
 
+
     return { total, page, limit, data: result };
   }
 
   async findOne(id: number) {
-    const lead = await this.leadRepo.findOne({ where: { id } });
+    const lead = await this.leadRepo.findOne({
+      where: { id },
+      relations: { status: true, user: true },
+    });
     if (!lead) {
       throw HttpError({ code: 'LEAD_NOT_FOUND' });
     }
@@ -111,7 +121,7 @@ export class LeadService {
   }
 
   async update(id: number, updateLeadDto: UpdateLeadDto) {
-    const {fullName,phoneNumber} = updateLeadDto;
+    const { fullName, phoneNumber } = updateLeadDto;
     const lead = await this.leadRepo.findOne({ where: { id } });
     const status = await this.statusRepo.findOne({
       where: { id: updateLeadDto.statusId },
@@ -131,7 +141,7 @@ export class LeadService {
     const updateDto = {
       fullName,
       phoneNumber,
-    }
+    };
     for (const key in lead) {
       if (Object.prototype.hasOwnProperty.call(updateDto, key))
         lead[key] = updateDto[key];

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { In, Like, Repository } from 'typeorm';
-import { Course } from './entities/course.entity';
+import { Course, CourseStatus } from './entities/course.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { findAllCourseQueryDto } from './dto/findAll-course.dto';
 import { User } from '../user/entities/user.entity';
@@ -37,31 +37,31 @@ export class CourseService {
 
     return course;
   }
-  async addUsersToCourse(courseId: number, userIds: number[]) {
-    const course = await this.courseRepo.findOne({
-      where: { id: courseId },
-      relations: ['users'],
-    });
+  // async addUsersToCourse(courseId: number, userIds: number[]) {
+  //   const course = await this.courseRepo.findOne({
+  //     where: { id: courseId },
+  //     relations: ['users'],
+  //   });
 
-    if (!course) {
-      throw HttpError({ code: 'COURSE_NOT_FOUND' });
-    }
+  //   if (!course) {
+  //     throw HttpError({ code: 'COURSE_NOT_FOUND' });
+  //   }
 
-    const users = await this.userRepo.findBy({
-      id: In(userIds),
-    });
+  //   const users = await this.userRepo.findBy({
+  //     id: In(userIds),
+  //   });
 
-    if (users.length !== userIds.length) {
-      throw HttpError({ code: 'SOME_USERS_NOT_FOUND' });
-    }
+  //   if (users.length !== userIds.length) {
+  //     throw HttpError({ code: 'SOME_USERS_NOT_FOUND' });
+  //   }
 
-    const existingUserIds = course.users.map((u) => u.id);
-    const newUsers = users.filter((u) => !existingUserIds.includes(u.id));
+  //   const existingUserIds = course.users.map((u) => u.id);
+  //   const newUsers = users.filter((u) => !existingUserIds.includes(u.id));
 
-    course.users.push(...newUsers);
+  //   course.users.push(...newUsers);
 
-    return this.courseRepo.save(course);
-  }
+  //   return this.courseRepo.save(course);
+  // }
 
   async removeUsersFromCourse(courseId: number, userIds: number[]) {
     const course = await this.courseRepo.findOne({
@@ -80,6 +80,7 @@ export class CourseService {
 
   async findAll(query: findAllCourseQueryDto) {
     const { limit = 10, page = 1 } = query;
+
     const [result, total] = await this.courseRepo.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
@@ -87,12 +88,22 @@ export class CourseService {
         name: query.name ? Like(`%${query.name.trim()}%`) : undefined,
         status: query.status,
       },
+      relations: { users: true },
     });
-    return { total, page, limit, data: result };
+
+    const results = result.map((course) => ({
+      ...course,
+      users: course.users.length,
+    }));
+
+    return { total, page, limit, data: results };
   }
 
   async findOne(id: number) {
-    const course = await this.courseRepo.findOne({ where: { id } });
+    const course = await this.courseRepo.findOne({
+      where: { id },
+      relations: { users: true },
+    });
     if (!course) {
       throw HttpError({ code: 'COURSE_NOT_FOUND' });
     }
@@ -104,7 +115,6 @@ export class CourseService {
       dto;
     const course = await this.courseRepo.findOne({
       where: { id },
-      relations: ['users'],
     });
 
     if (!course) {
@@ -129,10 +139,14 @@ export class CourseService {
   }
 
   async remove(id: number) {
-    const course = await this.findOne(id);
+    const course = await this.courseRepo.findOne({
+      where: { id },
+    });
     if (!course) {
       throw HttpError({ code: 'COURSE_NOT_FOUND' });
     }
-    await this.courseRepo.remove(course);
+    course.isDeleted = true; 
+    await this.courseRepo.save(course);
+    return course;
   }
 }

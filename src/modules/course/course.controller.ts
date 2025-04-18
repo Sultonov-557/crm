@@ -27,14 +27,14 @@ export class CourseController {
     return this.courseService.create(createCourseDto);
   }
 
-  @Post('course/:courseId/users')
-  @DecoratorWrapper('Add Multiple Users to Course', true, [Role.Admin])
-  addUsersToCourse(
-    @Param('courseId') courseId: string,
-    @Body() dto: AddUsersToCourseDto,
-  ) {
-    return this.courseService.addUsersToCourse(+courseId, dto.userIds);
-  }
+  // @Post('course/:courseId/users')
+  // @DecoratorWrapper('Add Multiple Users to Course', true, [Role.Admin])
+  // addUsersToCourse(
+  //   @Param('courseId') courseId: string,
+  //   @Body() dto: AddUsersToCourseDto,
+  // ) {
+  //   return this.courseService.addUsersToCourse(+courseId, dto.userIds);
+  // }
 
   @Delete('course/:courseId/users')
   @DecoratorWrapper('Remove Multiple Users from Course', true, [Role.Admin])
