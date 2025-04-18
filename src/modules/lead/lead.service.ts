@@ -44,7 +44,7 @@ export class LeadService {
     });
 
     const course = await this.courseRepo.findOne({
-      where: { id: courseId },
+      where: { id: courseId, isDeleted: false },
     });
 
     if (!course) {
