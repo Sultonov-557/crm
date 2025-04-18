@@ -33,6 +33,7 @@ export class LeadService {
       position,
       employers,
       courseId,
+      telegramUserId,
       region,
       city,
     } = createLeadDto;
@@ -55,7 +56,7 @@ export class LeadService {
         phoneNumber: phoneNumber,
         fullName: fullName,
         job: job,
-
+        telegramUserId: telegramUserId,
         position: position,
         employers: employers,
         region: region,
@@ -102,7 +103,7 @@ export class LeadService {
       where: {
         status: { id: statusId === undefined ? undefined : In(statusId) },
       },
-      relations: { course: true },
+      relations: { course: true, user: true },
     });
 
     return { total, page, limit, data: result };
