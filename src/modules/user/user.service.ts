@@ -49,7 +49,7 @@ export class UserService {
   async delete(id: number) {
     const user = await this.userRepo.findOneBy({ id });
     if (!user) HttpError({ code: 'USER_NOT_FOUND' });
-    user.status = UserStatus.DELETED;
+    user.isDeleted = true;
     return await this.userRepo.save(user);
   }
 
@@ -58,24 +58,29 @@ export class UserService {
     const [result, total] = await this.userRepo.findAndCount({
       where: {
         fullName: Like(`%${full_name?.trim() || ''}%`),
-        status: status || Not(UserStatus.DELETED),
+        status: status ? status : undefined, 
+        isDeleted: false, 
       },
       skip: (page - 1) * limit,
       take: limit,
       order: { createdAt: 'DESC' },
-      relations: { leads: true },
+      relations: { leads: true, courses: true },
     });
+  
     const results = result.map((user) => ({
       ...user,
       leads: user.leads.length,
+      courses: user.courses.length,
     }));
+  
     return { total, page, limit, data: results };
   }
+  
 
   async getOne(id: number) {
     const user = await this.userRepo.findOne({
-      where: { id },
-      relations: { leads: true },
+      where: { id, isDeleted: false },
+      relations: { leads: true,courses: true },
     });
     if (!user) HttpError({ code: 'USER_NOT_FOUND' });
     return user;

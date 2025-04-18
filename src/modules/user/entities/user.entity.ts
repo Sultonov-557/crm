@@ -6,7 +6,6 @@ import { Entity, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
 export enum UserStatus {
   INTERESTED = 'INTERESTED',
   CLIENT = 'CLIENT',
-  DELETED = 'DELETED',
 }
 
 @Entity()
@@ -34,6 +33,9 @@ export class User extends RootEntity {
 
   @Column()
   city: string;
+
+  @Column({ default: false })
+  isDeleted: boolean;
 
   @Column({ type: 'enum', enum: UserStatus })
   status: UserStatus;
