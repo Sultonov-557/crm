@@ -37,7 +37,4 @@ export class Course extends RootEntity {
 
   @ManyToMany(() => User, (user) => user.courses)
   users: User[];
-
-  @Column({ default: false })
-  isDeleted: Boolean;
 }
