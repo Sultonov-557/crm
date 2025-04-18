@@ -8,7 +8,7 @@ import {
   Matches,
 } from 'class-validator';
 
-export class UpdateLeadDto extends PartialType(CreateLeadDto) {
+export class UpdateLeadDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()

@@ -35,7 +35,10 @@ export class LeadService {
       courseId,
       region,
       city,
+      telegramUserId,
     } = createLeadDto;
+
+    console.log(createLeadDto.telegramUserId);
 
     let user = await this.userRepo.findOne({
       where: { phoneNumber },
@@ -50,6 +53,8 @@ export class LeadService {
       throw HttpError({ code: 'COURSE_NOT_FOUND' });
     }
 
+    console.log(user);
+
     if (!user) {
       user = await this.userService.create({
         phoneNumber: phoneNumber,
@@ -61,17 +66,17 @@ export class LeadService {
         region: region,
         city: city,
         courseId: courseId,
+        telegramUserId: telegramUserId,
       });
     } else {
       user.courses.push(course);
       user.status = UserStatus.CLIENT;
+      user.telegramUserId = telegramUserId;
     }
 
     const status = await this.statusRepo.findOne({
       where: { isDefault: true },
     });
-    console.log(status);
-
     const lead = this.leadRepo.create({
       fullName,
       phoneNumber,
@@ -101,6 +106,7 @@ export class LeadService {
       take: limit,
       where: {
         status: { id: statusId === undefined ? undefined : In(statusId) },
+        isDeleted: false,
       },
       relations: { course: true },
     });
@@ -111,7 +117,7 @@ export class LeadService {
   async findOne(id: number) {
     const lead = await this.leadRepo.findOne({
       where: { id },
-      relations: { status: true, user: true },
+      relations: { status: true, user: true, course: true },
     });
     if (!lead) {
       throw HttpError({ code: 'LEAD_NOT_FOUND' });
@@ -121,7 +127,10 @@ export class LeadService {
 
   async update(id: number, updateLeadDto: UpdateLeadDto) {
     const { fullName, phoneNumber } = updateLeadDto;
-    const lead = await this.leadRepo.findOne({ where: { id } });
+    const lead = await this.leadRepo.findOne({
+      where: { id },
+      relations: { user: true },
+    });
     const status = await this.statusRepo.findOne({
       where: { id: updateLeadDto.statusId },
     });
@@ -132,7 +141,7 @@ export class LeadService {
       throw HttpError({ code: 'LEAD_NOT_FOUND' });
     }
     const course = await this.courseRepo.findOne({
-      where: { id: updateLeadDto.courseId },
+      where: { id: updateLeadDto.courseId, isDeleted: false },
     });
     if (!course) {
       throw HttpError({ code: 'COURSE_NOT_FOUND' });

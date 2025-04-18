@@ -6,12 +6,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Status } from './entities/status.entity';
 import { findAllStatusQueryDto } from './dto/findAll-status.dto';
 import { HttpError } from 'src/common/exception/http.error';
+import { Lead } from '../lead/entities/lead.entity';
 
 @Injectable()
 export class StatusService implements OnApplicationBootstrap {
   constructor(
     @InjectRepository(Status)
     private readonly statusRepo: Repository<Status>,
+    @InjectRepository(Lead)
+    private readonly leadRepo: Repository<Lead>,
   ) {}
   async onApplicationBootstrap() {
     if (!(await this.statusRepo.findOne({ where: { isDefault: true } }))) {
@@ -103,12 +106,25 @@ export class StatusService implements OnApplicationBootstrap {
     const status = await this.statusRepo.findOne({
       where: { id },
     });
+    if (!status) {
+      throw HttpError({ code: 'Status not found' });
+    }
     if (status.isDefault) {
       throw HttpError({
         code: 'The default status cannot be deleted. You can only update the default status.',
       });
     }
+    const defaultStatus = await this.statusRepo.findOne({
+      where: { isDefault: true },
+    });
+    const leads = await this.leadRepo.find({
+      where: { status: { id } },
+    });
+    for (const lead of leads) {
+      lead.status = defaultStatus
+      await this.leadRepo.save(lead);
+    }
     const removeStatus = await this.findOne(id);
-    return await this.statusRepo.remove(removeStatus);
+    return await this.statusRepo.remove(removeStatus)
   }
 }
