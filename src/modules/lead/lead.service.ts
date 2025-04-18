@@ -103,6 +103,7 @@ export class LeadService {
       where: {
         status: { id: statusId === undefined ? undefined : In(statusId) },
       },
+      relations: { course: true },
     });
 
 

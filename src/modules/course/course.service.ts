@@ -17,8 +17,6 @@ export class CourseService {
     private readonly courseRepo: Repository<Course>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-    private telegramService: TelegramService,
-    private smsService: SmsService,
   ) {}
 
   async create(dto: CreateCourseDto) {
@@ -87,6 +85,7 @@ export class CourseService {
       where: {
         name: query.name ? Like(`%${query.name.trim()}%`) : undefined,
         status: query.status,
+        isDeleted: false,
       },
       relations: { users: true },
     });
@@ -101,7 +100,7 @@ export class CourseService {
 
   async findOne(id: number) {
     const course = await this.courseRepo.findOne({
-      where: { id },
+      where: { id, isDeleted: false },
       relations: { users: true },
     });
     if (!course) {
