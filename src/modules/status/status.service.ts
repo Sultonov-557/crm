@@ -67,15 +67,21 @@ export class StatusService implements OnApplicationBootstrap {
     return status;
   }
 
-  async update(id: number, updateStatusDto: UpdateStatusDto) {
+  async update(id: number, dto: UpdateStatusDto) {
     const status = await this.findOne(id);
-    const existingStatus = await this.statusRepo.findOne({
-      where: { name: updateStatusDto.name },
-    });
-    if (existingStatus && existingStatus.id !== id) {
-      throw HttpError({ code: 'Status already exists' });
+    if (dto.name) {
+      const existingStatus = await this.statusRepo.findOne({
+        where: { name: dto.name },
+      });
+      if (
+        existingStatus &&
+        existingStatus.id !== id &&
+        status.name !== dto.name
+      ) {
+        throw HttpError({ code: 'Status already exists' });
+      }
     }
-    if (updateStatusDto.isDefault) {
+    if (dto.isDefault) {
       const alreadyDefault = await this.statusRepo.findOne({
         where: { isDefault: true },
       });
@@ -89,7 +95,7 @@ export class StatusService implements OnApplicationBootstrap {
     }
 
     const updated = this.statusRepo.merge(status, {
-      name: updateStatusDto.name,
+      name: dto.name,
     });
     return await this.statusRepo.save(updated);
   }

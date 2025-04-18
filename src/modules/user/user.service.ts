@@ -20,27 +20,29 @@ export class UserService {
   async create(dto: CreateUserDto) {
     const {
       city,
-      full_name,
-      phone_number,
+      fullName,
+      phoneNumber,
       region,
       employers,
       job,
       position,
-      course_id,
+      telegramUserId,
+      courseId,
     } = dto;
     let user = await this.userRepo.findOne({
-      where: { phoneNumber: dto.phone_number },
+      where: { phoneNumber: dto.phoneNumber },
     });
-    const course = await this.courseRepo.findOne({ where: { id: course_id } });
+    const course = await this.courseRepo.findOne({ where: { id: courseId } });
     user = this.userRepo.create({
       city,
       region,
       employers,
       job,
       position,
+      telegramUserId,
       status: UserStatus.INTERESTED,
-      fullName: dto.full_name,
-      phoneNumber: dto.phone_number,
+      fullName,
+      phoneNumber,
     });
     user.courses = [course];
     return await this.userRepo.save(user);

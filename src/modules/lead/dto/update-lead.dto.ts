@@ -29,30 +29,5 @@ export class UpdateLeadDto extends PartialType(CreateLeadDto) {
 
   @ApiProperty()
   @IsOptional()
-  @IsString()
-  job?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  position?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  employers?: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  region: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  city: string;
-
-  @ApiProperty()
-  @IsOptional()
   courseId?: number;
 }

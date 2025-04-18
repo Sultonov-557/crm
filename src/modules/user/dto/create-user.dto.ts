@@ -1,9 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty()
-  full_name: string;
+  fullName: string;
 
   @ApiProperty({ example: '+998901234567' })
   @Matches(/^\+998[0-9]{9}$/, {
@@ -11,10 +11,15 @@ export class CreateUserDto {
   })
   @IsString()
   @IsNotEmpty()
-  phone_number: string;
+  phoneNumber: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  telegramUserId?: string;
 
   @ApiProperty()
-  course_id: number;
+  courseId: number;
 
   @ApiProperty()
   @IsOptional()
