@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateLeadDto {
   @ApiProperty()
@@ -14,6 +14,11 @@ export class CreateLeadDto {
   @IsNotEmpty()
   @IsString()
   phoneNumber: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  telegramUserId?: string;
 
   @ApiProperty()
   @IsOptional()

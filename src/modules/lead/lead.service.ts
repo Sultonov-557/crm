@@ -52,21 +52,20 @@ export class LeadService {
 
     if (!user) {
       user = await this.userService.create({
-        phone_number: phoneNumber,
-        full_name: fullName,
+        phoneNumber: phoneNumber,
+        fullName: fullName,
         job: job,
+
         position: position,
         employers: employers,
         region: region,
         city: city,
-        course_id: courseId,
+        courseId: courseId,
       });
     } else {
       user.courses.push(course);
       user.status = UserStatus.CLIENT;
     }
-    console.log(user);
-    
 
     const status = await this.statusRepo.findOne({
       where: { isDefault: true },
@@ -105,7 +104,6 @@ export class LeadService {
       },
       relations: { course: true },
     });
-
 
     return { total, page, limit, data: result };
   }

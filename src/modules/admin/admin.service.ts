@@ -29,7 +29,7 @@ export class AdminService {
   ) {}
 
   async create(dto: CreateAdminDto) {
-    const { username, password } = dto;
+    const { username } = dto;
     if (
       await this.adminRepo.existsBy({
         username: dto.username,
@@ -37,10 +37,11 @@ export class AdminService {
     )
       HttpError({ code: 'BUSY_USERNAME' });
 
-    const admin = this.adminRepo.create({
+    let admin = this.adminRepo.create({
       username,
       password: encrypt(dto.password),
     });
+    admin = await this.adminRepo.save(admin);
 
     const tokenVersion = getTokenVersion(admin.id.toString());
     const refreshTokenVersion = getRefreshTokenVersion(admin.id.toString());
