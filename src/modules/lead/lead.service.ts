@@ -33,6 +33,7 @@ export class LeadService {
       position,
       employers,
       courseId,
+      telegramUserId,
       region,
       city,
       telegramUserId,
@@ -60,7 +61,7 @@ export class LeadService {
         phoneNumber: phoneNumber,
         fullName: fullName,
         job: job,
-
+        telegramUserId: telegramUserId,
         position: position,
         employers: employers,
         region: region,
@@ -108,7 +109,7 @@ export class LeadService {
         status: { id: statusId === undefined ? undefined : In(statusId) },
         isDeleted: false,
       },
-      relations: { course: true },
+      relations: { course: true, user: true },
     });
 
     return { total, page, limit, data: result };

@@ -35,12 +35,14 @@ export class CreateLeadDto {
   @IsString()
   employers?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNotEmpty()
   @IsString()
   region: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNotEmpty()
   @IsString()
   city: string;
