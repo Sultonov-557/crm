@@ -36,7 +36,6 @@ export class LeadService {
       telegramUserId,
       region,
       city,
-      telegramUserId,
     } = createLeadDto;
 
     console.log(createLeadDto.telegramUserId);
@@ -67,7 +66,6 @@ export class LeadService {
         region: region,
         city: city,
         courseId: courseId,
-        telegramUserId: telegramUserId,
       });
     } else {
       user.courses.push(course);
