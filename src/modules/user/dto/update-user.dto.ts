@@ -1,7 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsArray,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Matches,
@@ -54,4 +56,10 @@ export class UpdateUserDto {
   @IsOptional()
   @IsEnum(UserStatus)
   status: UserStatus;
+
+  @ApiPropertyOptional({ example: [1, 2, 3] })
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  courseIds?: number[];
 }

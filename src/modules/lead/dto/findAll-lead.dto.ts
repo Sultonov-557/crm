@@ -17,4 +17,13 @@ export class findAllLeadQueryDto extends PaginationDto {
     example: [1, 2, 3],
   })
   statusId?: number[];
+
+  @IsOptional()
+  @ApiPropertyOptional({
+    type: Number,
+    required: false,
+    description: 'Number ID',
+    example: 1,
+  })
+  courseId?: number;
 }

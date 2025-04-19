@@ -38,8 +38,6 @@ export class LeadService {
       city,
     } = createLeadDto;
 
-    console.log(createLeadDto.telegramUserId);
-
     let user = await this.userRepo.findOne({
       where: { phoneNumber },
       relations: { courses: true },
@@ -52,8 +50,6 @@ export class LeadService {
     if (!course) {
       throw HttpError({ code: 'COURSE_NOT_FOUND' });
     }
-
-    console.log(user);
 
     if (!user) {
       user = await this.userService.create({
@@ -76,6 +72,9 @@ export class LeadService {
     const status = await this.statusRepo.findOne({
       where: { isDefault: true },
     });
+    if (!status) {
+      throw HttpError({ code: 'STATUS_NOT_FOUND' });
+    }
     const lead = this.leadRepo.create({
       fullName,
       phoneNumber,
@@ -99,6 +98,7 @@ export class LeadService {
 
   async findAll(query: findAllLeadQueryDto) {
     const { limit = 10, page = 1, statusId } = query;
+    
 
     const [result, total] = await this.leadRepo.findAndCount({
       skip: (page - 1) * limit,
@@ -106,6 +106,7 @@ export class LeadService {
       where: {
         status: { id: statusId === undefined ? undefined : In(statusId) },
         isDeleted: false,
+        course: { id: query.courseId, isDeleted: false },
       },
       relations: { course: true, user: true },
     });

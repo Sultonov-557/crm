@@ -7,8 +7,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { findAllCourseQueryDto } from './dto/findAll-course.dto';
 import { User } from '../user/entities/user.entity';
 import { HttpError } from 'src/common/exception/http.error';
-import { TelegramService } from '../telegram/telegram.service';
-import { SmsService } from '../sms/sms.service';
 
 @Injectable()
 export class CourseService {
@@ -35,31 +33,37 @@ export class CourseService {
 
     return course;
   }
-  // async addUsersToCourse(courseId: number, userIds: number[]) {
-  //   const course = await this.courseRepo.findOne({
-  //     where: { id: courseId },
-  //     relations: ['users'],
-  //   });
+  async addUsersToCourse(courseId: number, userIds: number[]) {
+    const course = await this.courseRepo.findOne({
+      where: { id: courseId },
+      relations: ['users'],
+    });
 
-  //   if (!course) {
-  //     throw HttpError({ code: 'COURSE_NOT_FOUND' });
-  //   }
+    if (!course) {
+      throw HttpError({ code: 'COURSE_NOT_FOUND' });
+    }
 
-  //   const users = await this.userRepo.findBy({
-  //     id: In(userIds),
-  //   });
+    const users = await this.userRepo.findBy({
+      id: In(userIds),
+    });
 
-  //   if (users.length !== userIds.length) {
-  //     throw HttpError({ code: 'SOME_USERS_NOT_FOUND' });
-  //   }
+    if (users.length !== userIds.length) {
+      throw HttpError({ code: 'SOME_USERS_NOT_FOUND' });
+    }
 
-  //   const existingUserIds = course.users.map((u) => u.id);
-  //   const newUsers = users.filter((u) => !existingUserIds.includes(u.id));
+    const existingUserIds = course.users.map((u) => u.id);
+    const newUsers = users.filter((u) => !existingUserIds.includes(u.id));
 
-  //   course.users.push(...newUsers);
+    if (!course.users) {
+      course.users = [];
+    }
+    
+    for (const user of newUsers) {
+      course.users.push(user);
+    }
 
-  //   return this.courseRepo.save(course);
-  // }
+    return this.courseRepo.save(course);
+  }
 
   async removeUsersFromCourse(courseId: number, userIds: number[]) {
     const course = await this.courseRepo.findOne({

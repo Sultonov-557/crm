@@ -21,7 +21,7 @@ export class Lead extends RootEntity {
   @JoinColumn()
   course: Course;
 
-  @ManyToOne(() => Status, (status) => status.leads, { eager: true })
+  @ManyToOne(() => Status, (status) => status.leads)
   @JoinColumn()
   status: Status;
 }

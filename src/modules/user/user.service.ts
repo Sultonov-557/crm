@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Like, Not, Repository } from 'typeorm';
+import { In, Like, Not, Repository } from 'typeorm';
 import { User, UserStatus } from './entities/user.entity';
 import { UpdateUserDto } from '../user/dto/update-user.dto';
 import { HttpError } from 'src/common/exception/http.error';
@@ -33,6 +33,9 @@ export class UserService {
       where: { phoneNumber: dto.phoneNumber },
     });
     const course = await this.courseRepo.findOne({ where: { id: courseId } });
+    if (!course) {
+      throw HttpError({ code: 'COURSE_NOT_FOUND' });
+    }
     user = this.userRepo.create({
       city,
       region,
@@ -60,29 +63,28 @@ export class UserService {
     const [result, total] = await this.userRepo.findAndCount({
       where: {
         fullName: Like(`%${full_name?.trim() || ''}%`),
-        status: status ? status : undefined, 
-        isDeleted: false, 
+        status: status ? status : undefined,
+        isDeleted: false,
       },
       skip: (page - 1) * limit,
       take: limit,
       order: { createdAt: 'DESC' },
       relations: { leads: true, courses: true },
     });
-  
+
     const results = result.map((user) => ({
       ...user,
-      leads: user.leads.length,
-      courses: user.courses.length,
+      leads: user.leads.filter((lead) => !lead.isDeleted).length,
+      courses: user.courses.filter((course) => !course.isDeleted).length,
     }));
-  
+
     return { total, page, limit, data: results };
   }
-  
 
   async getOne(id: number) {
     const user = await this.userRepo.findOne({
-      where: { id, isDeleted: false },
-      relations: { leads: true,courses: true },
+      where: { id },
+      relations: { leads: true, courses: true },
     });
     if (!user) HttpError({ code: 'USER_NOT_FOUND' });
     return user;
@@ -98,9 +100,15 @@ export class UserService {
       fullName,
       phoneNumber,
       status,
+      courseIds,
     } = dto;
-    const user = await this.userRepo.findOneBy({ id });
+
+    const user = await this.userRepo.findOne({
+      where: { id },
+      relations: { courses: true },
+    });
     if (!user) return HttpError({ code: 'USER_NOT_FOUND' });
+
     if (dto.phoneNumber && dto.phoneNumber !== user.phoneNumber) {
       const phoneNumber_ = await this.userRepo.findOne({
         where: { phoneNumber: dto.phoneNumber },
@@ -109,7 +117,8 @@ export class UserService {
         throw HttpError({ code: 'PHONE_NUMBER_ALREADY_EXISTS' });
       }
     }
-    dto = {
+
+    const updateData = {
       status,
       city,
       region,
@@ -119,8 +128,31 @@ export class UserService {
       fullName,
       phoneNumber,
     };
-    for (const key in user) {
-      if (Object.prototype.hasOwnProperty.call(dto, key)) user[key] = dto[key];
+
+    for (const key in updateData) {
+      if (
+        Object.prototype.hasOwnProperty.call(updateData, key) &&
+        updateData[key] !== undefined
+      ) {
+        user[key] = updateData[key];
+      }
+    }
+    if (courseIds !== undefined) {
+      if (courseIds.length === 0) {
+        throw HttpError({ code: 'COURSE_NOT_FOUND' });
+      }
+
+      if (courseIds.length > 0) {
+        const courses = await this.courseRepo.find({
+          where: { id: In(courseIds) },
+        });
+
+        if (courses.length !== courseIds.length) {
+          throw HttpError({ code: 'SOME_COURSES_NOT_FOUND' });
+        }
+
+        user.courses = courses;
+      }
     }
 
     return await this.userRepo.save(user);

@@ -103,6 +103,7 @@ export class AdminService {
     if (!admin) return HttpError({ code: 'ADMIN_NOT_FOUND' });
 
     const passwordMatch = dto.password === decrypt(admin.password);
+    
     if (!passwordMatch) HttpError({ code: 'WRONG_PASSWORD' });
 
     incrementTokenVersion(admin.id.toString());
