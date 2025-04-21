@@ -11,6 +11,7 @@ import { User, UserStatus } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
 import { env } from 'src/common/config';
 import { Status } from '../status/entities/status.entity';
+import { findAllLeadKahbanQueryDto } from './dto/findAll-lead-kahban.dto';
 @Injectable()
 export class LeadService {
   constructor(
@@ -120,7 +121,7 @@ export class LeadService {
     return { total, page, limit, data: result };
   }
   
-  async getLeadsForKanban(query: findAllLeadQueryDto) {
+  async getLeadsForKanban(query: findAllLeadKahbanQueryDto) {
     const { 
       courseId, 
       fullName, 

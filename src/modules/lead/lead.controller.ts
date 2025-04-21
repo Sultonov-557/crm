@@ -15,6 +15,7 @@ import { UpdateLeadDto } from './dto/update-lead.dto';
 import { findAllLeadQueryDto } from './dto/findAll-lead.dto';
 import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
 import { Role } from 'src/common/auth/roles/role.enum';
+import { findAllLeadKahbanQueryDto } from './dto/findAll-lead-kahban.dto';
 
 @Controller('lead')
 export class LeadController {
@@ -34,7 +35,7 @@ export class LeadController {
 
   @Get('kanban')
   @DecoratorWrapper('Get Leads for Kanban View')
-  getLeadsForKanban(@Query() query: findAllLeadQueryDto) {
+  getLeadsForKanban(@Query() query: findAllLeadKahbanQueryDto) {
     return this.leadService.getLeadsForKanban(query);
   }
 
@@ -42,7 +43,7 @@ export class LeadController {
   @DecoratorWrapper('Load More Leads for Kanban Status')
   loadMoreLeadsForStatus(
     @Param('statusId', ParseIntPipe) statusId: number,
-    @Query() query: findAllLeadQueryDto
+    @Query() query: findAllLeadKahbanQueryDto
   ) {
     // Override the query with the status ID from the path parameter
     return this.leadService.getLeadsForKanban({
