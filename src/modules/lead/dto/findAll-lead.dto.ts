@@ -31,4 +31,10 @@ fullName:string
     example: 1,
   })
   courseId?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNotEmpty()
+  phoneNumber:string
+
   }

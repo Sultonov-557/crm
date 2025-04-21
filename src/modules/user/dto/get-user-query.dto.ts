@@ -13,4 +13,15 @@ export class GetUserQueryDto extends PaginationDto {
   @IsOptional()
   @IsEnum(UserStatus)
   status?: UserStatus;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNotEmpty()
+  phone_number?: string;
+
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNotEmpty()
+  region?: string;
 }

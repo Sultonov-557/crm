@@ -101,13 +101,16 @@ export class LeadService {
   }
 
   async findAll(query: findAllLeadQueryDto) {
-    const { limit = 10, page = 1, statusId } = query;
+    const { limit = 10, page = 1, statusId,fullName,phoneNumber } = query;
+    console.log(phoneNumber);
     
 
     const [result, total] = await this.leadRepo.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
       where: {
+        fullName: Like(`%${fullName?.trim() || ''}%`),
+        phoneNumber: Like(`%${phoneNumber?.trim() || ''}%`),
         status: { 
           id: statusId === undefined ? undefined : 
              (Array.isArray(statusId) ? In(statusId) : statusId) 
