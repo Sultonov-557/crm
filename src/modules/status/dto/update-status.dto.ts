@@ -12,4 +12,9 @@ export class UpdateStatusDto {
   @IsOptional()
   @IsBoolean()
   isDefault?: boolean;
+
+  @ApiPropertyOptional({ example: '#6366F1' })
+  @IsOptional()
+  @IsString()
+  color?: string;
 }

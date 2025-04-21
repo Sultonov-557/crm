@@ -3,7 +3,7 @@ import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
 import { Lead } from './entities/lead.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Like, Repository } from 'typeorm';
 import { Course } from '../course/entities/course.entity';
 import { HttpError } from 'src/common/exception/http.error';
 import { findAllLeadQueryDto } from './dto/findAll-lead.dto';
@@ -97,21 +97,112 @@ export class LeadService {
   }
 
   async findAll(query: findAllLeadQueryDto) {
-    const { limit = 10, page = 1, statusId } = query;
+    const { limit = 10, page = 1, statusId, courseId, fullName, sortBy = 'createdAt', order = 'DESC' } = query;
     
+    const queryBuilder = this.leadRepo.createQueryBuilder('lead')
+      .leftJoinAndSelect('lead.course', 'course')
+      .leftJoinAndSelect('lead.user', 'user')
+      .leftJoinAndSelect('lead.status', 'status')
+      .where('lead.isDeleted = :isDeleted', { isDeleted: false });
+    
+    if (fullName) {
+      queryBuilder.andWhere('lead.fullName LIKE :fullName', { fullName: `%${fullName}%` });
+    }
+    
+    if (courseId) {
+      queryBuilder.andWhere('course.id = :courseId', { courseId });
+    }
+    
+    if (statusId && Array.isArray(statusId) && statusId.length > 0) {
+      queryBuilder.andWhere('status.id IN (:...statusId)', { statusId });
+    }
+    
+    // Add index-based optimization for sorting
+    queryBuilder.orderBy(`lead.${sortBy}`, order);
+    
+    // Get total count for pagination
+    const total = await queryBuilder.getCount();
+    
+    // Apply pagination
+    queryBuilder.skip((page - 1) * limit).take(limit);
+    
+    // Execute the query
+    const data = await queryBuilder.getMany();
+    
+    return { total, page, limit, data };
+  }
 
-    const [result, total] = await this.leadRepo.findAndCount({
-      skip: (page - 1) * limit,
-      take: limit,
-      where: {
-        status: { id: statusId === undefined ? undefined : In(statusId) },
-        isDeleted: false,
-        course: { id: query.courseId, isDeleted: false },
-      },
-      relations: { course: true, user: true },
+  async getLeadsForKanban(query: findAllLeadQueryDto) {
+    const { 
+      courseId, 
+      fullName, 
+      limit = 10,
+      loadMoreStatusId,
+      statusPage = 1,
+      statusLimit = 10
+    } = query;
+    
+    // Get all statuses first
+    const statuses = await this.statusRepo.find({
+      order: { id: 'ASC' }
     });
-
-    return { total, page, limit, data: result };
+    
+    if (!statuses.length) {
+      return { columns: [] };
+    }
+    
+    // Create an array to store column data including counts
+    const columns = [];
+    
+    // Process each status into a column with paginated leads
+    for (const status of statuses) {
+      // If loading more for a specific status and this isn't that status, use page 1
+      const currentStatusPage = loadMoreStatusId === status.id ? statusPage : 1;
+      
+      // Create query builder specific to this status
+      const queryBuilder = this.leadRepo.createQueryBuilder('lead')
+        .leftJoinAndSelect('lead.course', 'course')
+        .leftJoinAndSelect('lead.user', 'user')
+        .leftJoinAndSelect('lead.status', 'status')
+        .where('lead.isDeleted = :isDeleted', { isDeleted: false })
+        .andWhere('status.id = :statusId', { statusId: status.id })
+        .orderBy('lead.updatedAt', 'DESC');
+      
+      if (fullName) {
+        queryBuilder.andWhere('lead.fullName LIKE :fullName', { fullName: `%${fullName}%` });
+      }
+      
+      if (courseId) {
+        queryBuilder.andWhere('course.id = :courseId', { courseId });
+      }
+      
+      // Get total count of leads for this status (without pagination)
+      const total = await queryBuilder.getCount();
+      
+      // Apply pagination and get leads for current page
+      const statusLeads = await queryBuilder
+        .skip((currentStatusPage - 1) * statusLimit)
+        .take(statusLimit)
+        .getMany();
+      
+      columns.push({
+        id: status.id,
+        name: status.name,
+        color: status.color,
+        isDefault: status.isDefault,
+        leads: statusLeads,
+        total,
+        page: currentStatusPage,
+        limit: statusLimit,
+        hasMore: total > currentStatusPage * statusLimit
+      });
+    }
+    
+    return { 
+      columns,
+      loadedMore: loadMoreStatusId ? true : false,
+      loadMoreStatusId
+    };
   }
 
   async findOne(id: number) {

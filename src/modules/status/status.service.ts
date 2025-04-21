@@ -23,7 +23,7 @@ export class StatusService implements OnApplicationBootstrap {
   }
 
   async create(createStatusDto: CreateStatusDto) {
-    const { name, isDefault } = createStatusDto;
+    const { name, isDefault, color } = createStatusDto;
     const existingStatus = await this.statusRepo.findOne({
       where: { name: createStatusDto.name },
     });
@@ -34,6 +34,7 @@ export class StatusService implements OnApplicationBootstrap {
     const status = this.statusRepo.create({
       name,
       isDefault,
+      color,
     });
     // if (!(await this.statusRepo.findOne({ where: { default: true } }))) {
     //   status.default = true;
@@ -52,11 +53,27 @@ export class StatusService implements OnApplicationBootstrap {
   }
 
   async findAll(query: findAllStatusQueryDto) {
-    const { page = 1, limit = 10 } = query;
+    const { page = 1, limit = 10, forKanban = false } = query;
+    
+    // If requesting all statuses for Kanban view, return all without pagination
+    if (forKanban) {
+      const result = await this.statusRepo.find({
+        order: { 
+          id: 'ASC' 
+        }
+      });
+      return { total: result.length, data: result };
+    }
+    
+    // Regular paginated response for other use cases
     const [result, total] = await this.statusRepo.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
+      order: { 
+        id: 'ASC' 
+      }
     });
+    
     return { total, page, limit, data: result };
   }
 
@@ -99,6 +116,7 @@ export class StatusService implements OnApplicationBootstrap {
 
     const updated = this.statusRepo.merge(status, {
       name: dto.name,
+      color: dto.color,
     });
     return await this.statusRepo.save(updated);
   }
