@@ -118,7 +118,7 @@ export class StatusService implements OnApplicationBootstrap {
       where: { isDefault: true },
     });
     if (!defaultStatus) {
-      throw HttpError({ code: 'Default status not found' });
+      throw HttpError({ code: 'DEFAULT_STATUS_NOT_FOUND' });
     }
     const leads = await this.leadRepo.find({
       where: { status: { id } },

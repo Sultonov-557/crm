@@ -102,8 +102,13 @@ export class AdminService {
     const admin = await this.adminRepo.findOneBy({ username: dto.username });
     if (!admin) return HttpError({ code: 'ADMIN_NOT_FOUND' });
 
-    const passwordMatch = dto.password === decrypt(admin.password);
-    
+    let passwordMatch = false;
+    try {
+      passwordMatch = dto.password === decrypt(admin.password);
+    } catch (error) {
+      HttpError({ code: 'INVALID_PASSWORD_FORMAT' });
+    }
+
     if (!passwordMatch) HttpError({ code: 'WRONG_PASSWORD' });
 
     incrementTokenVersion(admin.id.toString());

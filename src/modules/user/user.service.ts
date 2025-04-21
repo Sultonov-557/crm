@@ -138,6 +138,9 @@ export class UserService {
       }
     }
     if (courseIds !== undefined) {
+      if (!Array.isArray(courseIds)) {
+        throw HttpError({ code: 'INVALID_COURSE_IDS_FORMAT' });
+      }
       if (courseIds.length === 0) {
         throw HttpError({ code: 'COURSE_NOT_FOUND' });
       }

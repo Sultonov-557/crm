@@ -57,7 +57,7 @@ export class CourseService {
     if (!course.users) {
       course.users = [];
     }
-    
+
     for (const user of newUsers) {
       course.users.push(user);
     }
@@ -96,7 +96,7 @@ export class CourseService {
 
     const results = result.map((course) => ({
       ...course,
-      users: course.users.length,
+      users: course.users ? course.users.length : 0,
     }));
 
     return { total, page, limit, data: results };
@@ -148,7 +148,7 @@ export class CourseService {
     if (!course) {
       throw HttpError({ code: 'COURSE_NOT_FOUND' });
     }
-    course.isDeleted = true; 
+    course.isDeleted = true;
     await this.courseRepo.save(course);
     return course;
   }

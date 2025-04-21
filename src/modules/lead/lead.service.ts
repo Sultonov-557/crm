@@ -64,6 +64,9 @@ export class LeadService {
         courseId: courseId,
       });
     } else {
+      if (!user.courses) {
+        user.courses = [];
+      }
       user.courses.push(course);
       user.status = UserStatus.CLIENT;
       user.telegramUserId = telegramUserId;
@@ -104,7 +107,10 @@ export class LeadService {
       skip: (page - 1) * limit,
       take: limit,
       where: {
-        status: { id: statusId === undefined ? undefined : In(statusId) },
+        status: { 
+          id: statusId === undefined ? undefined : 
+             (Array.isArray(statusId) ? In(statusId) : statusId) 
+        },
         isDeleted: false,
         course: { id: query.courseId, isDeleted: false },
       },
