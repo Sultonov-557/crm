@@ -1,7 +1,7 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { CreateStatusDto } from './dto/create-status.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Status } from './entities/status.entity';
 import { findAllStatusQueryDto } from './dto/findAll-status.dto';
@@ -49,28 +49,36 @@ export class StatusService implements OnApplicationBootstrap {
         await this.statusRepo.save(alreadyDefault);
       }
     }
-   status.order = await this.statusRepo.count();
-   return await this.statusRepo.save(status);
+    status.order = await this.statusRepo.count();
+    return await this.statusRepo.save(status);
   }
 
   async reOrder(order: number[]) {
-    const statuses = await this.statusRepo.findByIds(order);
-  
+    // Validate that order is a non-empty array of numbers
+    if (!Array.isArray(order) || order.length === 0) {
+      throw HttpError({ code: 'INVALID_ORDER_FORMAT' });
+    }
+    
+    // Ensure all elements are numbers
+    if (!order.every(id => typeof id === 'number')) {
+      throw HttpError({ code: 'ORDER_MUST_CONTAIN_ONLY_NUMBERS' });
+    }
+    const statuses = await this.statusRepo.findBy({ id: In(order) });
+
     if (statuses.length !== order.length) {
       throw HttpError({ code: 'SOME_STATUSES_NOT_FOUND' });
     }
-  
+
     // Mapping ID -> status object
-    const statusMap = new Map(statuses.map(status => [status.id, status]));
-  
+    const statusMap = new Map(statuses.map((status) => [status.id, status]));
+
     for (let i = 0; i < order.length; i++) {
       const status = statusMap.get(order[i]);
       status.order = i;
     }
-  
+
     await this.statusRepo.save([...statusMap.values()]);
   }
-  
 
   async findAll(query: findAllStatusQueryDto) {
     const { page = 1, limit = 10, forKanban = false } = query;
