@@ -54,12 +54,23 @@ export class StatusService implements OnApplicationBootstrap {
   }
 
   async reOrder(order: number[]) {
-    for (let i = 0; i < order.length; i++) {
-      const status = await this.findOne(order[i]);
-      status.order = i;
-      await this.statusRepo.save(status);
+    const statuses = await this.statusRepo.findByIds(order);
+  
+    if (statuses.length !== order.length) {
+      throw HttpError({ code: 'SOME_STATUSES_NOT_FOUND' });
     }
+  
+    // Mapping ID -> status object
+    const statusMap = new Map(statuses.map(status => [status.id, status]));
+  
+    for (let i = 0; i < order.length; i++) {
+      const status = statusMap.get(order[i]);
+      status.order = i;
+    }
+  
+    await this.statusRepo.save([...statusMap.values()]);
   }
+  
 
   async findAll(query: findAllStatusQueryDto) {
     const { page = 1, limit = 10, forKanban = false } = query;
