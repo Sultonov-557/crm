@@ -11,6 +11,21 @@ export class Lead extends RootEntity {
   @Column()
   phoneNumber: string;
 
+  @Column({ nullable: true })
+  job?: string;
+
+  @Column({ nullable: true })
+  position?: string;
+
+  @Column({ nullable: true })
+  employers?: string;
+
+  @Column()
+  region: string;
+
+  @Column()
+  city: string;
+
   @Column({ default: false })
   isDeleted: boolean;
 

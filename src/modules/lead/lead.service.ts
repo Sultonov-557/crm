@@ -80,8 +80,7 @@ export class LeadService {
       throw HttpError({ code: 'STATUS_NOT_FOUND' });
     }
     const lead = this.leadRepo.create({
-      fullName,
-      phoneNumber,
+      
     });
     lead.course = course;
     lead.user = user;
@@ -209,7 +208,7 @@ export class LeadService {
   }
 
   async update(id: number, updateLeadDto: UpdateLeadDto) {
-    const { fullName, phoneNumber } = updateLeadDto;
+    const { fullName } = updateLeadDto;
     const lead = await this.leadRepo.findOne({
       where: { id },
       relations: { user: true },
@@ -231,7 +230,6 @@ export class LeadService {
     }
     const updateDto = {
       fullName,
-      phoneNumber,
     };
     for (const key in lead) {
       if (Object.prototype.hasOwnProperty.call(updateDto, key))

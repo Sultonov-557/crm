@@ -15,15 +15,6 @@ export class UpdateLeadDto {
   @IsString()
   fullName: string;
 
-  @ApiPropertyOptional({example:"+998999999999"})
-  @IsOptional()
-  @Matches(/^\+998[0-9]{9}$/, {
-    message: 'Phone number must start with +998 and contain exactly 13 digits.',
-  })
-  @IsNotEmpty()
-  @IsString()
-  phoneNumber: string;
-
   @ApiPropertyOptional()
   @IsOptional()
   @IsInt()
