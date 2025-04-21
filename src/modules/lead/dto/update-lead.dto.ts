@@ -1,4 +1,4 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { CreateLeadDto } from './create-lead.dto';
 import {
   IsInt,
@@ -9,12 +9,14 @@ import {
 } from 'class-validator';
 
 export class UpdateLeadDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNotEmpty()
   @IsString()
   fullName: string;
 
-  @ApiProperty({ example: '+998901234567' })
+  @ApiPropertyOptional({example:"+998999999999"})
+  @IsOptional()
   @Matches(/^\+998[0-9]{9}$/, {
     message: 'Phone number must start with +998 and contain exactly 13 digits.',
   })
@@ -22,12 +24,12 @@ export class UpdateLeadDto {
   @IsString()
   phoneNumber: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsOptional()
   @IsInt()
   statusId: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsOptional()
   courseId?: number;
 }

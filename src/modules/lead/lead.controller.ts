@@ -32,6 +32,25 @@ export class LeadController {
     return this.leadService.findAll(query);
   }
 
+  @Get('kanban')
+  @DecoratorWrapper('Get Leads for Kanban View')
+  getLeadsForKanban(@Query() query: findAllLeadQueryDto) {
+    return this.leadService.getLeadsForKanban(query);
+  }
+
+  @Get('kanban/load-more/:statusId')
+  @DecoratorWrapper('Load More Leads for Kanban Status')
+  loadMoreLeadsForStatus(
+    @Param('statusId', ParseIntPipe) statusId: number,
+    @Query() query: findAllLeadQueryDto
+  ) {
+    // Override the query with the status ID from the path parameter
+    return this.leadService.getLeadsForKanban({
+      ...query,
+      loadMoreStatusId: statusId
+    });
+  }
+
   @Get(':id')
   @DecoratorWrapper('Find One Lead')
   findOne(@Param('id', ParseIntPipe) id: string) {

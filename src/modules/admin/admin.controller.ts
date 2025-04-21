@@ -45,6 +45,12 @@ export class AdminController {
     return CoreApiResponse.success(await this.adminService.logout(req.user.id));
   }
 
+  @Get('me')
+  @DecoratorWrapper('Get Current Admin', true, [Role.Admin])
+  async getMe(@Req() req: Request) {
+    return CoreApiResponse.success(await this.adminService.getOne(req.user.id));
+  }
+
   @Post()
   @DecoratorWrapper('Admin Create', true, [Role.Admin])
   async create(@Body() dto: CreateAdminDto) {

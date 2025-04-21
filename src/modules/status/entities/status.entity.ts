@@ -12,4 +12,7 @@ export class Status extends RootEntity {
 
   @Column({ default: false })
   isDefault: boolean;
+
+  @Column({ nullable: true })
+  color: string;
 }
