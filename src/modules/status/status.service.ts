@@ -31,7 +31,7 @@ export class StatusService implements OnApplicationBootstrap {
       throw HttpError({ code: 'Status already exists' });
     }
 
-    const status = this.statusRepo.create({
+    let status = this.statusRepo.create({
       name,
       isDefault,
       color,
@@ -49,31 +49,40 @@ export class StatusService implements OnApplicationBootstrap {
         await this.statusRepo.save(alreadyDefault);
       }
     }
-    return await this.statusRepo.save(status);
+   status.order = await this.statusRepo.count();
+   return await this.statusRepo.save(status);
+  }
+
+  async reOrder(order: number[]) {
+    for (let i = 0; i < order.length; i++) {
+      const status = await this.findOne(order[i]);
+      status.order = i;
+      await this.statusRepo.save(status);
+    }
   }
 
   async findAll(query: findAllStatusQueryDto) {
     const { page = 1, limit = 10, forKanban = false } = query;
-    
+
     // If requesting all statuses for Kanban view, return all without pagination
     if (forKanban) {
       const result = await this.statusRepo.find({
-        order: { 
-          id: 'ASC' 
-        }
+        order: {
+          order: 'ASC',
+        },
       });
       return { total: result.length, data: result };
     }
-    
+
     // Regular paginated response for other use cases
     const [result, total] = await this.statusRepo.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
-      order: { 
-        id: 'ASC' 
-      }
+      order: {
+        order: 'ASC',
+      },
     });
-    
+
     return { total, page, limit, data: result };
   }
 
@@ -142,10 +151,10 @@ export class StatusService implements OnApplicationBootstrap {
       where: { status: { id } },
     });
     for (const lead of leads) {
-      lead.status = defaultStatus
+      lead.status = defaultStatus;
       await this.leadRepo.save(lead);
     }
     const removeStatus = await this.findOne(id);
-    return await this.statusRepo.remove(removeStatus)
+    return await this.statusRepo.remove(removeStatus);
   }
 }

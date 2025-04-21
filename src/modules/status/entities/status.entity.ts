@@ -1,6 +1,6 @@
 import { RootEntity } from 'src/common/database/root.entity';
 import { Lead } from 'src/modules/lead/entities/lead.entity';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, Generated, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Status extends RootEntity {
@@ -15,4 +15,7 @@ export class Status extends RootEntity {
 
   @Column({ nullable: true })
   color: string;
+
+  @Column()
+  order: number;
 }

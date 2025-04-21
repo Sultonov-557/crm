@@ -26,6 +26,12 @@ export class StatusController {
     return this.statusService.create(createStatusDto);
   }
 
+  @Patch('reorder')
+  @DecoratorWrapper('Reorder Status', true, [Role.Admin])
+  reOrder(@Body() order: number[]) {
+    return this.statusService.reOrder(order);
+  }
+
   @Get()
   @DecoratorWrapper('Get All Status')
   findAll(@Query() query: findAllStatusQueryDto) { 
