@@ -79,9 +79,7 @@ export class LeadService {
     if (!status) {
       throw HttpError({ code: 'STATUS_NOT_FOUND' });
     }
-    const lead = this.leadRepo.create({
-      
-    });
+    const lead = this.leadRepo.create({});
     lead.course = course;
     lead.user = user;
     lead.status = status;
@@ -100,9 +98,7 @@ export class LeadService {
   }
 
   async findAll(query: findAllLeadQueryDto) {
-    const { limit = 10, page = 1, statusId,fullName,phoneNumber } = query;
-    console.log(phoneNumber);
-    
+    const { limit = 10, page = 1, statusId, fullName, phoneNumber } = query;
 
     const [result, total] = await this.leadRepo.findAndCount({
       skip: (page - 1) * limit,
@@ -110,9 +106,13 @@ export class LeadService {
       where: {
         fullName: Like(`%${fullName?.trim() || ''}%`),
         phoneNumber: Like(`%${phoneNumber?.trim() || ''}%`),
-        status: { 
-          id: statusId === undefined ? undefined : 
-             (Array.isArray(statusId) ? In(statusId) : statusId) 
+        status: {
+          id:
+            statusId === undefined
+              ? undefined
+              : Array.isArray(statusId)
+                ? In(statusId)
+                : statusId,
         },
         isDeleted: false,
         course: { id: query.courseId, isDeleted: false },
@@ -122,60 +122,63 @@ export class LeadService {
 
     return { total, page, limit, data: result };
   }
-  
+
   async getLeadsForKanban(query: findAllLeadKahbanQueryDto) {
-    const { 
-      courseId, 
-      fullName, 
+    const {
+      courseId,
+      fullName,
       limit = 10,
       loadMoreStatusId,
       statusPage = 1,
-      statusLimit = 10
+      statusLimit = 10,
     } = query;
-    
+
     // Get all statuses first
     const statuses = await this.statusRepo.find({
-      order: { id: 'ASC' }
+      order: { order: 'ASC' },
     });
-    
+
     if (!statuses.length) {
       return { columns: [] };
     }
-    
+
     // Create an array to store column data including counts
     const columns = [];
-    
+
     // Process each status into a column with paginated leads
     for (const status of statuses) {
       // If loading more for a specific status and this isn't that status, use page 1
       const currentStatusPage = loadMoreStatusId === status.id ? statusPage : 1;
-      
+
       // Create query builder specific to this status
-      const queryBuilder = this.leadRepo.createQueryBuilder('lead')
+      const queryBuilder = this.leadRepo
+        .createQueryBuilder('lead')
         .leftJoinAndSelect('lead.course', 'course')
         .leftJoinAndSelect('lead.user', 'user')
         .leftJoinAndSelect('lead.status', 'status')
         .where('lead.isDeleted = :isDeleted', { isDeleted: false })
         .andWhere('status.id = :statusId', { statusId: status.id })
         .orderBy('lead.updatedAt', 'DESC');
-      
+
       if (fullName) {
-        queryBuilder.andWhere('lead.fullName LIKE :fullName', { fullName: `%${fullName}%` });
+        queryBuilder.andWhere('lead.fullName LIKE :fullName', {
+          fullName: `%${fullName}%`,
+        });
       }
-      
+
       if (courseId) {
         queryBuilder.andWhere('course.id = :courseId', { courseId });
       }
-      
+
       // Get total count of leads for this status (without pagination)
       const total = await queryBuilder.getCount();
-      
+
       // Apply pagination and get leads for current page
       const statusLeads = await queryBuilder
         .skip((currentStatusPage - 1) * statusLimit)
         .take(statusLimit)
         .getMany();
-      
+
       columns.push({
         id: status.id,
         name: status.name,
@@ -185,14 +188,14 @@ export class LeadService {
         total,
         page: currentStatusPage,
         limit: statusLimit,
-        hasMore: total > currentStatusPage * statusLimit
+        hasMore: total > currentStatusPage * statusLimit,
       });
     }
-    
-    return { 
+
+    return {
       columns,
       loadedMore: loadMoreStatusId ? true : false,
-      loadMoreStatusId
+      loadMoreStatusId,
     };
   }
 
