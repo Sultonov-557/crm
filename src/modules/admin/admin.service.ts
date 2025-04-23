@@ -196,9 +196,6 @@ export class AdminService {
       if (!dto.oldPassword) HttpError({ code: 'OLD_PASSWORD_REQUIRED' });
       let passwordMatch = false;
       try {
-        console.log('o', dto.oldPassword);
-        console.log('c', decrypt(admin.password));
-
         passwordMatch = dto.oldPassword === decrypt(admin.password);
       } catch (error) {
         HttpError({ code: 'INVALID_PASSWORD_FORMAT' });
@@ -211,7 +208,7 @@ export class AdminService {
     const updateAdmin = {
       username: dto.username,
     };
-    
+
     for (const key in admin) {
       if (Object.prototype.hasOwnProperty.call(updateAdmin, key))
         admin[key] = updateAdmin[key];
