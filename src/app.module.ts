@@ -12,6 +12,7 @@ import { SmsModule } from './modules/sms/sms.module';
 import { StatusModule } from './modules/status/status.module';
 import { StatsModule } from './modules/stats/stats.module';
 import { TelegramModule as TelegramClientModule } from 'nestjs-telegram';
+import { LocationModule } from './modules/location/location.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { TelegramModule as TelegramClientModule } from 'nestjs-telegram';
     SmsModule,
     StatusModule,
     StatsModule,
+    LocationModule,
   ],
   controllers: [],
   providers: [],
