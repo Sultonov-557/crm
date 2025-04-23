@@ -12,6 +12,8 @@ import { UserService } from '../user/user.service';
 import { env } from 'src/common/config';
 import { Status } from '../status/entities/status.entity';
 import { findAllLeadKahbanQueryDto } from './dto/findAll-lead-kahban.dto';
+import { hash } from 'crypto';
+
 @Injectable()
 export class LeadService {
   constructor(
@@ -96,21 +98,12 @@ export class LeadService {
     return await this.leadRepo.save(lead);
   }
 
-  async generateUrl(id: number) {
-    const lead = await this.courseRepo.findOne({ where: { id } });
-    if (!lead) {
-      throw HttpError({ code: 'COURSE_NOT_FOUND' });
-    }
-    const url = `${env.FRONTEND_URL}/${lead.id}`;
-    return url;
-  }
-
   async findAll(query: findAllLeadQueryDto) {
     const { limit = 10, page = 1, statusId, fullName, phoneNumber } = query;
 
     const [result, total] = await this.leadRepo.findAndCount({
       skip: (page - 1) * limit,
-      take: limit==0?undefined:limit,
+      take: limit == 0 ? undefined : limit,
       where: {
         fullName: Like(`%${fullName?.trim() || ''}%`),
         phoneNumber: Like(`%${phoneNumber?.trim() || ''}%`),

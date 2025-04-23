@@ -27,6 +27,12 @@ export class CourseController {
     return this.courseService.create(createCourseDto);
   }
 
+  @Get('course/:courseId')
+  @DecoratorWrapper('Generate Url')
+  generateUrl(@Param('courseId') id: string) {
+    return this.courseService.generateUrl(parseInt(id));
+  }
+
   @Post('/:courseId/users')
   @DecoratorWrapper('Add Multiple Users to Course', true, [Role.Admin])
   addUsersToCourse(

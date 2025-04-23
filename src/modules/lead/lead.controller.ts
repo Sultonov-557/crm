@@ -58,11 +58,7 @@ export class LeadController {
     return this.leadService.findOne(+id);
   }
 
-  @Get('course/:courseId')
-  @DecoratorWrapper('Generate Url', true, [Role.Admin])
-  generateUrl(@Param('courseId') id: string) {
-    return this.leadService.generateUrl(parseInt(id));
-  }
+ 
 
   @Patch(':id')
   @DecoratorWrapper('Update Lead', true, [Role.Admin])
