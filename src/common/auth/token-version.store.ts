@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { join, dirname } from 'path';
 
 const FILE_PATH = join(__dirname, './token-version.json');
 
@@ -24,6 +24,14 @@ export function incrementTokenVersion(userId: string): string {
   const updated = randomUUID();
   store[userId] = updated;
   cache = store;
+
+  // Ensure directory exists before writing
+  const dir = dirname(FILE_PATH);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+
   writeFileSync(FILE_PATH, JSON.stringify(store, null, 2));
+
   return updated;
 }

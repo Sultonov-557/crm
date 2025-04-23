@@ -96,8 +96,9 @@ export class UserService {
   async getOne(id: number) {
     const user = await this.userRepo.findOne({
       where: { id },
-      relations: { leads: true, courses: true },
+      relations: { leads: { status: true }, courses: true },
     });
+    user.leads = user.leads.filter((lead) => !lead.isDeleted);
     if (!user) HttpError({ code: 'USER_NOT_FOUND' });
     return user;
   }
