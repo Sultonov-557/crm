@@ -22,7 +22,7 @@ export class LeadController {
   constructor(private readonly leadService: LeadService) {}
 
   @Post()
-  @DecoratorWrapper('Create Lead', true, [Role.Admin])
+  @DecoratorWrapper('Create Lead')
   create(@Body() createLeadDto: CreateLeadDto) {
     return this.leadService.create(createLeadDto);
   }
@@ -43,12 +43,12 @@ export class LeadController {
   @DecoratorWrapper('Load More Leads for Kanban Status')
   loadMoreLeadsForStatus(
     @Param('statusId', ParseIntPipe) statusId: number,
-    @Query() query: findAllLeadKahbanQueryDto
+    @Query() query: findAllLeadKahbanQueryDto,
   ) {
     // Override the query with the status ID from the path parameter
     return this.leadService.getLeadsForKanban({
       ...query,
-      loadMoreStatusId: statusId
+      loadMoreStatusId: statusId,
     });
   }
 
@@ -57,8 +57,6 @@ export class LeadController {
   findOne(@Param('id', ParseIntPipe) id: string) {
     return this.leadService.findOne(+id);
   }
-
- 
 
   @Patch(':id')
   @DecoratorWrapper('Update Lead', true, [Role.Admin])
