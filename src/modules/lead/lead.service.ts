@@ -79,7 +79,15 @@ export class LeadService {
     if (!status) {
       throw HttpError({ code: 'STATUS_NOT_FOUND' });
     }
-    const lead = this.leadRepo.create({});
+    const lead = this.leadRepo.create({
+      fullName,
+      phoneNumber,
+      job,
+      position,
+      employers,
+      region,
+      city,
+    });
     lead.course = course;
     lead.user = user;
     lead.status = status;
