@@ -11,10 +11,12 @@ import { TelegramModule } from './modules/telegram/telegram.module';
 import { SmsModule } from './modules/sms/sms.module';
 import { StatusModule } from './modules/status/status.module';
 import { StatsModule } from './modules/stats/stats.module';
+import { TelegramModule as TelegramClientModule } from 'nestjs-telegram';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(DatabaseConfig),
+
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/public',

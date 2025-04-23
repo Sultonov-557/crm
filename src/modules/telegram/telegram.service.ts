@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { CreateGroupDto } from './dtos/create-group.dto';
 import { Group } from './entities/group.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,13 +10,46 @@ import { GetGroupQueryDto } from './dtos/get-group-query.dto';
 import { SendMessageDto } from './dtos/send-message.dto';
 import { Course } from '../course/entities/course.entity';
 import { UpdateGroupDto } from './dtos/update-group.dto';
+import { Bot } from 'grammy';
 
 @Injectable()
-export class TelegramService {
+export class TelegramService implements OnApplicationBootstrap {
+  private telegram: Bot;
   constructor(
     @InjectRepository(Group) private readonly groupRepo: Repository<Group>,
     @InjectRepository(Course) private readonly courseRepo: Repository<Course>,
   ) {}
+
+  onApplicationBootstrap() {
+    this.telegram = new Bot(env.BOT_TOKEN);
+    this.telegram.start();
+
+    this.telegram.on('my_chat_member', async (ctx) => {
+      const chatMember = ctx.myChatMember;
+      const chatId = chatMember.chat.id;
+      const status = chatMember.new_chat_member.status;
+
+      if (status === 'kicked' || status === 'member' || status === 'left') {
+        await this.groupRepo.delete({ telegramId: chatId.toString() });
+        console.log(
+          `Group with ID ${chatId} has been removed from the database.`,
+        );
+      } else if (status === 'administrator') {
+        const group = await this.groupRepo.findOneBy({
+          telegramId: chatId.toString(),
+        });
+        if (!group) {
+          await this.createGroup({
+            telegramId: chatId.toString(),
+            name: chatMember.chat.title,
+          }),
+            console.log(
+              `Group with ID ${chatId} has been added to the database.`,
+            );
+        }
+      }
+    });
+  }
 
   private formatDate(date: Date): string {
     return new Date(date).toLocaleDateString('uz-UZ', {
@@ -56,17 +89,16 @@ Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${env.FRONTEND_URL + course.id
 
     for (const group of groups) {
       try {
-        await axios.post(
-          `https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`,
-          { chat_id: '-100' + group.telegramId, text: message },
-          { timeout: 30000, family: 4 },
-        );
+        await this.telegram.api.sendMessage(group.telegramId, message);
       } catch {}
     }
   }
 
   async createGroup(dto: CreateGroupDto) {
-    const { name, telegramId } = dto;
+    let { name, telegramId } = dto;
+    if (!telegramId.startsWith('-100')) {
+      telegramId = `-100${telegramId}`;
+    }
     if (await this.groupRepo.existsBy({ telegramId: dto.telegramId })) {
       throw new HttpError({ code: 'ALREADY_EXISTS' });
     }

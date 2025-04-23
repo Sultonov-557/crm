@@ -126,6 +126,7 @@ export class LeadService {
   async getLeadsForKanban(query: findAllLeadKahbanQueryDto) {
     const {
       courseId,
+      phoneNumber,
       fullName,
       limit = 10,
       loadMoreStatusId,
@@ -163,6 +164,12 @@ export class LeadService {
       if (fullName) {
         queryBuilder.andWhere('lead.fullName LIKE :fullName', {
           fullName: `%${fullName}%`,
+        });
+      }
+
+      if (phoneNumber) {
+        queryBuilder.andWhere('lead.phoneNumber LIKE :phoneNumber', {
+          phoneNumber: `%${phoneNumber}%`,
         });
       }
 

@@ -1,7 +1,14 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import {
+  IsBoolean,
+  IsBooleanString,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+} from 'class-validator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { UserStatus } from '../entities/user.entity';
+import { Type } from 'class-transformer';
 
 export class GetUserQueryDto extends PaginationDto {
   @ApiPropertyOptional()
@@ -19,6 +26,10 @@ export class GetUserQueryDto extends PaginationDto {
   @IsNotEmpty()
   phone_number?: string;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBooleanString()
+  isDeleted?: string | boolean;
 
   @ApiPropertyOptional()
   @IsOptional()

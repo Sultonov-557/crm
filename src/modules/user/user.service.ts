@@ -59,14 +59,24 @@ export class UserService {
   }
 
   async getAll(query: GetUserQueryDto) {
-    const { limit = 10, page = 1, full_name, status,phone_number,region } = query;
+    let {
+      limit = 10,
+      page = 1,
+      full_name,
+      status,
+      phone_number,
+      region,
+      isDeleted,
+    } = query;
+    isDeleted = isDeleted === 'true' ? true : false;
+
     const [result, total] = await this.userRepo.findAndCount({
       where: {
         fullName: Like(`%${full_name?.trim() || ''}%`),
         phoneNumber: Like(`%${phone_number?.trim() || ''}%`),
         region: Like(`%${region?.trim() || ''}%`),
         status: status ? status : undefined,
-        isDeleted: false,
+        isDeleted: isDeleted,
       },
       skip: (page - 1) * limit,
       take: limit,
