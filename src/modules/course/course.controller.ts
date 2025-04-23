@@ -27,7 +27,7 @@ export class CourseController {
     return this.courseService.create(createCourseDto);
   }
 
-  @Post('course/:courseId/users')
+  @Post('/:courseId/users')
   @DecoratorWrapper('Add Multiple Users to Course', true, [Role.Admin])
   addUsersToCourse(
     @Param('courseId') courseId: string,
@@ -36,7 +36,7 @@ export class CourseController {
     return this.courseService.addUsersToCourse(+courseId, dto.userIds);
   }
 
-  @Delete('course/:courseId/users')
+  @Delete('/:courseId/users')
   @DecoratorWrapper('Remove Multiple Users from Course', true, [Role.Admin])
   removeUsersFromCourse(
     @Param('courseId') courseId: string,
