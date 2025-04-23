@@ -11,6 +11,7 @@ import { SendMessageDto } from './dtos/send-message.dto';
 import { Course } from '../course/entities/course.entity';
 import { UpdateGroupDto } from './dtos/update-group.dto';
 import { Bot } from 'grammy';
+import { CourseService } from '../course/course.service';
 
 @Injectable()
 export class TelegramService implements OnApplicationBootstrap {
@@ -18,6 +19,7 @@ export class TelegramService implements OnApplicationBootstrap {
   constructor(
     @InjectRepository(Group) private readonly groupRepo: Repository<Group>,
     @InjectRepository(Course) private readonly courseRepo: Repository<Course>,
+    private readonly courseService: CourseService,
   ) {}
 
   onApplicationBootstrap() {
@@ -75,7 +77,7 @@ Tavsif: ${course.description}.
 Davomiyligi: ${this.formatDate(course.end_date)},
 Boshlanish sanasi: ${this.formatDate(course.start_date)}.
 Joylashuv: ${course.location}.
-Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${env.FRONTEND_URL + course.id}.`;
+Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${await this.courseService.generateUrl(course.id)}`;
 
     return this.broadcast(message, dto.telegramIds);
   }
@@ -115,7 +117,7 @@ Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${env.FRONTEND_URL + course.id
         name: Like(`%${name?.trim() || ''}%`),
       },
       skip: (page - 1) * limit,
-      take: limit==0?undefined:limit,
+      take: limit == 0 ? undefined : limit,
       order: { createdAt: 'DESC' },
     });
 

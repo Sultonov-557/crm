@@ -7,6 +7,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { findAllCourseQueryDto } from './dto/findAll-course.dto';
 import { User } from '../user/entities/user.entity';
 import { HttpError } from 'src/common/exception/http.error';
+import { hash } from 'crypto';
+import { env } from 'process';
 
 @Injectable()
 export class CourseService {
@@ -33,6 +35,21 @@ export class CourseService {
 
     return course;
   }
+
+  async generateUrl(id: number) {
+    const lead = await this.courseRepo.findOne({ where: { id } });
+    if (!lead) {
+      throw HttpError({ code: 'COURSE_NOT_FOUND' });
+    }
+
+    const hashedID = hash('sha256', id.toString());
+
+    const newID = `${hashedID.slice(0, 3)}${id}${hashedID.slice(-3)}`;
+
+    const url = `${env.FRONTEND_URL}/${newID}`;
+    return url;
+  }
+
   async addUsersToCourse(courseId: number, userIds: number[]) {
     const course = await this.courseRepo.findOne({
       where: { id: courseId },
@@ -85,7 +102,7 @@ export class CourseService {
 
     const [result, total] = await this.courseRepo.findAndCount({
       skip: (page - 1) * limit,
-      take: limit==0?undefined:limit,
+      take: limit == 0 ? undefined : limit,
       where: {
         name: query.name ? Like(`%${query.name.trim()}%`) : undefined,
         status: query.status,

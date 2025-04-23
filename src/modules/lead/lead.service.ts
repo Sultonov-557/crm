@@ -98,22 +98,6 @@ export class LeadService {
     return await this.leadRepo.save(lead);
   }
 
-  async generateUrl(id: number) {
-    const lead = await this.courseRepo.findOne({ where: { id } });
-    if (!lead) {
-      throw HttpError({ code: 'COURSE_NOT_FOUND' });
-    }
-
-    const hashedID = hash('sha256', id.toString());
-
-    const newID = `${hashedID.slice(0, 3)}${id}${hashedID.slice(-3)}`;
-    console.log(hashedID);
-    console.log(newID);
-
-    const url = `${env.FRONTEND_URL}/${newID}`;
-    return url;
-  }
-
   async findAll(query: findAllLeadQueryDto) {
     const { limit = 10, page = 1, statusId, fullName, phoneNumber } = query;
 

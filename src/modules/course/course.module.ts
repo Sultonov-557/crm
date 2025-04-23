@@ -8,12 +8,9 @@ import { TelegramModule } from '../telegram/telegram.module';
 import { SmsModule } from '../sms/sms.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Course, User]),
-    TelegramModule,
-    SmsModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Course, User])],
   controllers: [CourseController],
   providers: [CourseService],
+  exports: [CourseService],
 })
 export class CourseModule {}

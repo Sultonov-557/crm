@@ -6,12 +6,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { In, Repository } from 'typeorm';
 import { Course } from '../course/entities/course.entity';
+import { CourseService } from '../course/course.service';
 
 @Injectable()
 export class SmsService {
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Course) private courseRepo: Repository<Course>,
+    private readonly courseService: CourseService,
   ) {}
 
   private accessToken: string;
@@ -47,12 +49,14 @@ export class SmsService {
       where: { id: dto.courseId },
     });
 
-    const staticMessage = `Yangi kurs Ochilyapti: ${course.name}.
-Tavsif: ${course.description}.
-Davomiyligi: ${course.end_date},
-Boshlanish sanasi: ${course.start_date}.
-Joylashuv: ${course.location}.
-Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${env.FRONTEND_URL + course.id}.`;
+    const message = `Yangi kurs Ochilyapti: ${course.name}.
+    Tavsif: ${course.description}.
+    Davomiyligi: ${this.formatDate(course.end_date)},
+    Boshlanish sanasi: ${this.formatDate(course.start_date)}.
+    Joylashuv: ${course.location}.
+    Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${await this.courseService.generateUrl(
+      course.id,
+    )}`;
 
     for (const user of users) {
       await axios.postForm(
@@ -60,11 +64,21 @@ Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${env.FRONTEND_URL + course.id
         {
           from: '4546',
           mobile_phone: user.phoneNumber,
-          message: staticMessage,
+          message,
         },
         { headers: { Authorization: `Bearer ${this.accessToken}` } },
       );
     }
+  }
+
+  private formatDate(date: Date): string {
+    return new Date(date).toLocaleDateString('uz-UZ', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   }
 
   async updateToken() {
