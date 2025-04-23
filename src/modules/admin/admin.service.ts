@@ -191,18 +191,28 @@ export class AdminService {
   async update(id: number, dto: UpdateAdminDto) {
     const admin = await this.adminRepo.findOneBy({ id });
     if (!admin) return HttpError({ code: 'ADMIN_NOT_FOUND' });
+
+    if (dto.password) {
+      if (!dto.oldPassword) HttpError({ code: 'OLD_PASSWORD_REQUIRED' });
+      let passwordMatch = false;
+      try {
+        passwordMatch = dto.oldPassword === decrypt(admin.password);
+      } catch (error) {
+        HttpError({ code: 'INVALID_PASSWORD_FORMAT' });
+      }
+      if (!passwordMatch) HttpError({ code: 'WRONG_PASSWORD' });
+
+      admin.password = encrypt(dto.password);
+    }
+
     const updateAdmin = {
       username: dto.username,
-      password: dto.password,
     };
+
     for (const key in admin) {
       if (Object.prototype.hasOwnProperty.call(updateAdmin, key))
         admin[key] = updateAdmin[key];
     }
-    if (dto.password) {
-      admin.password = encrypt(dto.password);
-    }
-
     if (dto.username && dto.username !== admin.username) {
       const busyUsername = await this.adminRepo.findOneBy({
         username: dto.username,
