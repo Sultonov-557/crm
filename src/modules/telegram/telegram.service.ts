@@ -115,7 +115,7 @@ Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${env.FRONTEND_URL + course.id
         name: Like(`%${name?.trim() || ''}%`),
       },
       skip: (page - 1) * limit,
-      take: limit,
+      take: limit==0?undefined:limit,
       order: { createdAt: 'DESC' },
     });
 

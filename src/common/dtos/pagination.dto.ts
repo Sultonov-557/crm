@@ -14,6 +14,6 @@ export class PaginationDto {
   @IsOptional()
   @IsInt()
   @Type(() => Number)
-  @Min(1)
+  @Min(0)
   limit?: number;
 }

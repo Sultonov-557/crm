@@ -85,7 +85,7 @@ export class CourseService {
 
     const [result, total] = await this.courseRepo.findAndCount({
       skip: (page - 1) * limit,
-      take: limit,
+      take: limit==0?undefined:limit,
       where: {
         name: query.name ? Like(`%${query.name.trim()}%`) : undefined,
         status: query.status,

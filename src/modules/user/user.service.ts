@@ -79,7 +79,7 @@ export class UserService {
         isDeleted: isDeleted,
       },
       skip: (page - 1) * limit,
-      take: limit,
+      take: limit == 0 ? undefined : limit,
       order: { createdAt: 'DESC' },
       relations: { leads: true, courses: true },
     });

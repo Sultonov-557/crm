@@ -110,7 +110,7 @@ export class LeadService {
 
     const [result, total] = await this.leadRepo.findAndCount({
       skip: (page - 1) * limit,
-      take: limit,
+      take: limit==0?undefined:limit,
       where: {
         fullName: Like(`%${fullName?.trim() || ''}%`),
         phoneNumber: Like(`%${phoneNumber?.trim() || ''}%`),
