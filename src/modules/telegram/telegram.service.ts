@@ -130,7 +130,9 @@ Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${await this.courseService.gen
 
   async deleteGroup(id: number) {
     const group = await this.groupRepo.findOneBy({ id });
+    console.log('TELEGRAM ID:', group.telegramId);
     if (!group) throw new HttpError({ code: 'Gruppa topilmadi' });
+    await this.telegram.api.leaveChat(group.telegramId);
     return await this.groupRepo.delete({ id });
   }
 }
