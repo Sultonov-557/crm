@@ -12,7 +12,6 @@ import { UserService } from '../user/user.service';
 import { env } from 'src/common/config';
 import { Status } from '../status/entities/status.entity';
 import { findAllLeadKahbanQueryDto } from './dto/findAll-lead-kahban.dto';
-import { hash } from 'crypto';
 
 @Injectable()
 export class LeadService {
@@ -51,7 +50,7 @@ export class LeadService {
     });
 
     if (!course) {
-      throw HttpError({ code: 'COURSE_NOT_FOUND' });
+      throw HttpError({ code: 'Kurs topilmadi' });
     }
 
     if (!user) {
@@ -79,7 +78,7 @@ export class LeadService {
       where: { isDefault: true },
     });
     if (!status) {
-      throw HttpError({ code: 'STATUS_NOT_FOUND' });
+      throw HttpError({ code: 'Holat topilmadi' });
     }
     const lead = this.leadRepo.create({
       fullName,
@@ -135,7 +134,6 @@ export class LeadService {
       statusLimit = 10,
     } = query;
 
-    // Get all statuses first
     const statuses = await this.statusRepo.find({
       order: { order: 'ASC' },
     });
@@ -144,15 +142,11 @@ export class LeadService {
       return { columns: [] };
     }
 
-    // Create an array to store column data including counts
     const columns = [];
 
-    // Process each status into a column with paginated leads
     for (const status of statuses) {
-      // If loading more for a specific status and this isn't that status, use page 1
       const currentStatusPage = loadMoreStatusId === status.id ? statusPage : 1;
 
-      // Create query builder specific to this status
       const queryBuilder = this.leadRepo
         .createQueryBuilder('lead')
         .leftJoinAndSelect('lead.course', 'course')
@@ -178,10 +172,8 @@ export class LeadService {
         queryBuilder.andWhere('course.id = :courseId', { courseId });
       }
 
-      // Get total count of leads for this status (without pagination)
       const total = await queryBuilder.getCount();
 
-      // Apply pagination and get leads for current page
       const statusLeads = await queryBuilder
         .skip((currentStatusPage - 1) * statusLimit)
         .take(statusLimit)
@@ -213,7 +205,7 @@ export class LeadService {
       relations: { status: true, user: true, course: true },
     });
     if (!lead) {
-      throw HttpError({ code: 'LEAD_NOT_FOUND' });
+      throw HttpError({ code: 'Lid topilmadi' });
     }
     return lead;
   }
@@ -228,16 +220,16 @@ export class LeadService {
       where: { id: updateLeadDto.statusId },
     });
     if (!status) {
-      throw HttpError({ code: 'STATUS_NOT_FOUND' });
+      throw HttpError({ code: 'Holat topilmadi' });
     }
     if (!lead) {
-      throw HttpError({ code: 'LEAD_NOT_FOUND' });
+      throw HttpError({ code: 'Lid topilmadi' });
     }
     const course = await this.courseRepo.findOne({
       where: { id: updateLeadDto.courseId, isDeleted: false },
     });
     if (!course) {
-      throw HttpError({ code: 'COURSE_NOT_FOUND' });
+      throw HttpError({ code: 'Kurs topilmadi' });
     }
     const updateDto = {
       fullName,
@@ -254,7 +246,7 @@ export class LeadService {
   async remove(id: number) {
     const lead = await this.findOne(id);
     if (!lead) {
-      throw HttpError({ code: 'LEAD_NOT_FOUND' });
+      throw HttpError({ code: 'Lid topilmadi' });
     }
     lead.isDeleted = true;
     return await this.leadRepo.save(lead);

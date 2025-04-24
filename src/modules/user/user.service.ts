@@ -34,7 +34,7 @@ export class UserService {
     });
     const course = await this.courseRepo.findOne({ where: { id: courseId } });
     if (!course) {
-      throw HttpError({ code: 'COURSE_NOT_FOUND' });
+      throw HttpError({ code: 'Kurs topilmadi' });
     }
     user = this.userRepo.create({
       city,
@@ -53,7 +53,7 @@ export class UserService {
 
   async delete(id: number) {
     const user = await this.userRepo.findOneBy({ id });
-    if (!user) HttpError({ code: 'USER_NOT_FOUND' });
+    if (!user) HttpError({ code: 'Foydalanuvchi topilmadi' });
     user.isDeleted = true;
     return await this.userRepo.save(user);
   }
@@ -99,7 +99,7 @@ export class UserService {
       relations: { leads: { status: true }, courses: true },
     });
     user.leads = user.leads.filter((lead) => !lead.isDeleted);
-    if (!user) HttpError({ code: 'USER_NOT_FOUND' });
+    if (!user) HttpError({ code: 'Foydalanuvchi topilmadi' });
     return user;
   }
 
@@ -120,14 +120,14 @@ export class UserService {
       where: { id },
       relations: { courses: true },
     });
-    if (!user) return HttpError({ code: 'USER_NOT_FOUND' });
+    if (!user) return HttpError({ code: 'Foydalanuvchi topilmadi' });
 
     if (dto.phoneNumber && dto.phoneNumber !== user.phoneNumber) {
       const phoneNumber_ = await this.userRepo.findOne({
         where: { phoneNumber: dto.phoneNumber },
       });
       if (phoneNumber_) {
-        throw HttpError({ code: 'PHONE_NUMBER_ALREADY_EXISTS' });
+        throw HttpError({ code: 'Bu telefon raqam band' });
       }
     }
 
@@ -155,7 +155,7 @@ export class UserService {
         throw HttpError({ code: 'INVALID_COURSE_IDS_FORMAT' });
       }
       if (courseIds.length === 0) {
-        throw HttpError({ code: 'COURSE_NOT_FOUND' });
+        throw HttpError({ code: 'Kurs topilmadi' });
       }
 
       if (courseIds.length > 0) {
@@ -164,7 +164,7 @@ export class UserService {
         });
 
         if (courses.length !== courseIds.length) {
-          throw HttpError({ code: 'SOME_COURSES_NOT_FOUND' });
+          throw HttpError({ code: 'Bazi kurslar topilmadi' });
         }
 
         user.courses = courses;

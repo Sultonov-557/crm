@@ -39,7 +39,7 @@ export class CourseService {
   async generateUrl(id: number) {
     const lead = await this.courseRepo.findOne({ where: { id } });
     if (!lead) {
-      throw HttpError({ code: 'COURSE_NOT_FOUND' });
+      throw HttpError({ code: 'Kurs topilmadi' });
     }
 
     const hashedID = hash('sha256', id.toString());
@@ -57,7 +57,7 @@ export class CourseService {
     });
 
     if (!course) {
-      throw HttpError({ code: 'COURSE_NOT_FOUND' });
+      throw HttpError({ code: 'Kurs topilmadi' });
     }
 
     const users = await this.userRepo.findBy({
@@ -65,7 +65,7 @@ export class CourseService {
     });
 
     if (users.length !== userIds.length) {
-      throw HttpError({ code: 'SOME_USERS_NOT_FOUND' });
+      throw HttpError({ code: 'Biroz foydalanuvchilar topilmadi' });
     }
 
     const existingUserIds = course.users.map((u) => u.id);
@@ -89,7 +89,7 @@ export class CourseService {
     });
 
     if (!course) {
-      throw HttpError({ code: 'COURSE_NOT_FOUND' });
+      throw HttpError({ code: 'Kurs topilmadi' });
     }
 
     course.users = course.users.filter((user) => !userIds.includes(user.id));
@@ -125,7 +125,7 @@ export class CourseService {
       relations: { users: true },
     });
     if (!course) {
-      throw HttpError({ code: 'COURSE_NOT_FOUND' });
+      throw HttpError({ code: 'Kurs topilmadi' });
     }
     return course;
   }
@@ -138,7 +138,7 @@ export class CourseService {
     });
 
     if (!course) {
-      throw HttpError({ code: 'COURSE_NOT_FOUND' });
+      throw HttpError({ code: 'Kurs topilmadi' });
     }
     const updateCourse = {
       description,
@@ -163,7 +163,7 @@ export class CourseService {
       where: { id },
     });
     if (!course) {
-      throw HttpError({ code: 'COURSE_NOT_FOUND' });
+      throw HttpError({ code: 'Kurs topilmadi' });
     }
     course.isDeleted = true;
     await this.courseRepo.save(course);

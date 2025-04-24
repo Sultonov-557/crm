@@ -35,7 +35,7 @@ export class AdminService {
         username: dto.username,
       })
     )
-      HttpError({ code: 'BUSY_USERNAME' });
+      HttpError({ code: 'Username band' });
 
     let admin = this.adminRepo.create({
       username,
@@ -74,7 +74,7 @@ export class AdminService {
 
   async delete(id: number) {
     const admin = await this.adminRepo.findOneBy({ id });
-    if (!admin) HttpError({ code: 'ADMIN_NOT_FOUND' });
+    if (!admin) HttpError({ code: 'Admin topilmadi' });
     return (await this.adminRepo.delete({ id: admin.id })).raw;
   }
 
@@ -94,22 +94,22 @@ export class AdminService {
 
   async getOne(id: number) {
     const admin = await this.adminRepo.findOne({ where: { id } });
-    if (!admin) HttpError({ code: 'ADMIN_NOT_FOUND' });
+    if (!admin) HttpError({ code: 'Admin topilmadi' });
     return admin;
   }
 
   async login(dto: LoginAdminDto) {
     const admin = await this.adminRepo.findOneBy({ username: dto.username });
-    if (!admin) return HttpError({ code: 'ADMIN_NOT_FOUND' });
+    if (!admin) return HttpError({ code: 'Admin topilmadi' });
 
     let passwordMatch = false;
     try {
       passwordMatch = dto.password === decrypt(admin.password);
     } catch (error) {
-      HttpError({ code: 'INVALID_PASSWORD_FORMAT' });
+      HttpError({ code: 'Parol xato formatda' });
     }
 
-    if (!passwordMatch) HttpError({ code: 'WRONG_PASSWORD' });
+    if (!passwordMatch) HttpError({ code: 'Parol xato' });
 
     incrementTokenVersion(admin.id.toString());
     incrementRefreshTokenVersion(admin.id.toString());
@@ -150,7 +150,7 @@ export class AdminService {
 
   async logout(id: number) {
     const admin = await this.adminRepo.findOneBy({ id });
-    if (!admin) HttpError({ code: 'ADMIN_NOT_FOUND' });
+    if (!admin) HttpError({ code: 'Admin topilmadi' });
     incrementTokenVersion(id.toString());
     incrementRefreshTokenVersion(id.toString());
     admin.refreshToken = null;
@@ -167,7 +167,7 @@ export class AdminService {
     if (!adminData) HttpError({ code: 'LOGIN_FAILED' });
 
     const admin = await this.adminRepo.findOneBy({ id: +adminData.id });
-    if (!admin) HttpError({ code: 'ADMIN_NOT_FOUND' });
+    if (!admin) HttpError({ code: 'Admin topilmadi' });
 
     const isRefTokenMatch = await compare(dto.refreshToken, admin.refreshToken);
     if (!isRefTokenMatch) HttpError({ code: 'accessToken' });
@@ -190,17 +190,17 @@ export class AdminService {
 
   async update(id: number, dto: UpdateAdminDto) {
     const admin = await this.adminRepo.findOneBy({ id });
-    if (!admin) return HttpError({ code: 'ADMIN_NOT_FOUND' });
+    if (!admin) return HttpError({ code: 'Admin topilmadi' });
 
     if (dto.password) {
-      if (!dto.oldPassword) HttpError({ code: 'OLD_PASSWORD_REQUIRED' });
+      if (!dto.oldPassword) HttpError({ code: 'Avvalgi parol zarur' });
       let passwordMatch = false;
       try {
         passwordMatch = dto.oldPassword === decrypt(admin.password);
       } catch (error) {
-        HttpError({ code: 'INVALID_PASSWORD_FORMAT' });
+        HttpError({ code: 'Parol xato formatda' });
       }
-      if (!passwordMatch) HttpError({ code: 'WRONG_PASSWORD' });
+      if (!passwordMatch) HttpError({ code: 'Parol xato' });
 
       admin.password = encrypt(dto.password);
     }
@@ -217,7 +217,7 @@ export class AdminService {
       const busyUsername = await this.adminRepo.findOneBy({
         username: dto.username,
       });
-      if (busyUsername) HttpError({ code: 'BUSY_USERNAME' });
+      if (busyUsername) HttpError({ code: 'Username band' });
     }
 
     return await this.adminRepo.save(admin);

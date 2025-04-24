@@ -15,7 +15,7 @@ export class LocationService {
   findOne(id: number) {
     const region = this.regionsData.find((r) => r.id === id);
     if (!region) {
-      throw HttpError({ code: 'Region not found' });
+      throw HttpError({ code: 'Viloyat topilmadi' });
     }
     const districts =this.districtsData.filter((d) => d.region_id === id);
 

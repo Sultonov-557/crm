@@ -18,7 +18,7 @@ export class StatusService implements OnApplicationBootstrap {
   ) {}
   async onApplicationBootstrap() {
     if (!(await this.statusRepo.findOne({ where: { isDefault: true } }))) {
-      await this.create({ name: 'NewLead', isDefault: true });
+      await this.create({ name: 'YangiLid', isDefault: true });
     }
   }
 
@@ -28,7 +28,7 @@ export class StatusService implements OnApplicationBootstrap {
       where: { name: createStatusDto.name },
     });
     if (existingStatus) {
-      throw HttpError({ code: 'Status already exists' });
+      throw HttpError({ code: 'Holat band' });
     }
 
     let status = this.statusRepo.create({
@@ -36,9 +36,6 @@ export class StatusService implements OnApplicationBootstrap {
       isDefault,
       color,
     });
-    // if (!(await this.statusRepo.findOne({ where: { default: true } }))) {
-    //   status.default = true;
-    // }
 
     if (createStatusDto.isDefault) {
       const alreadyDefault = await this.statusRepo.findOne({
@@ -54,12 +51,10 @@ export class StatusService implements OnApplicationBootstrap {
   }
 
   async reOrder(order: number[]) {
-    // Validate that order is a non-empty array of numbers
     if (!Array.isArray(order) || order.length === 0) {
       throw HttpError({ code: 'INVALID_ORDER_FORMAT' });
     }
     
-    // Ensure all elements are numbers
     if (!order.every(id => typeof id === 'number')) {
       throw HttpError({ code: 'ORDER_MUST_CONTAIN_ONLY_NUMBERS' });
     }
@@ -69,7 +64,6 @@ export class StatusService implements OnApplicationBootstrap {
       throw HttpError({ code: 'SOME_STATUSES_NOT_FOUND' });
     }
 
-    // Mapping ID -> status object
     const statusMap = new Map(statuses.map((status) => [status.id, status]));
 
     for (let i = 0; i < order.length; i++) {
@@ -83,7 +77,6 @@ export class StatusService implements OnApplicationBootstrap {
   async findAll(query: findAllStatusQueryDto) {
     const { page = 1, limit = 10, forKanban = false } = query;
 
-    // If requesting all statuses for Kanban view, return all without pagination
     if (forKanban) {
       const result = await this.statusRepo.find({
         order: {
@@ -93,7 +86,6 @@ export class StatusService implements OnApplicationBootstrap {
       return { total: result.length, data: result };
     }
 
-    // Regular paginated response for other use cases
     const [result, total] = await this.statusRepo.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
@@ -110,7 +102,7 @@ export class StatusService implements OnApplicationBootstrap {
       where: { id },
     });
     if (!status) {
-      throw HttpError({ code: 'Status not found' });
+      throw HttpError({ code: 'Holat topilmadi' });
     }
     return status;
   }
@@ -126,7 +118,7 @@ export class StatusService implements OnApplicationBootstrap {
         existingStatus.id !== id &&
         status.name !== dto.name
       ) {
-        throw HttpError({ code: 'Status already exists' });
+        throw HttpError({ code: 'Holat band' });
       }
     }
     if (dto.isDefault) {
@@ -153,18 +145,18 @@ export class StatusService implements OnApplicationBootstrap {
       where: { id },
     });
     if (!status) {
-      throw HttpError({ code: 'Status not found' });
+      throw HttpError({ code: 'Holat topilmadi' });
     }
     if (status.isDefault) {
       throw HttpError({
-        code: 'The default status cannot be deleted. You can only update the default status.',
+        code: `Standart holatni o'chirib bo'lmaydi. Siz faqat standart holatni yangilashingiz mumkin.`,
       });
     }
     const defaultStatus = await this.statusRepo.findOne({
       where: { isDefault: true },
     });
     if (!defaultStatus) {
-      throw HttpError({ code: 'DEFAULT_STATUS_NOT_FOUND' });
+      throw HttpError({ code: 'Standard holat topilmadi' });
     }
     const leads = await this.leadRepo.find({
       where: { status: { id } },

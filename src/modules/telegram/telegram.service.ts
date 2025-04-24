@@ -33,9 +33,6 @@ export class TelegramService implements OnApplicationBootstrap {
 
       if (status === 'kicked' || status === 'member' || status === 'left') {
         await this.groupRepo.delete({ telegramId: chatId.toString() });
-        console.log(
-          `Group with ID ${chatId} has been removed from the database.`,
-        );
       } else if (status === 'administrator') {
         const group = await this.groupRepo.findOneBy({
           telegramId: chatId.toString(),
@@ -44,10 +41,7 @@ export class TelegramService implements OnApplicationBootstrap {
           await this.createGroup({
             telegramId: chatId.toString(),
             name: chatMember.chat.title,
-          }),
-            console.log(
-              `Group with ID ${chatId} has been added to the database.`,
-            );
+          });
         }
       }
     });
@@ -69,7 +63,7 @@ export class TelegramService implements OnApplicationBootstrap {
     });
 
     if (!course) {
-      throw new HttpError({ code: 'COURSE_NOT_FOUND' });
+      throw new HttpError({ code: 'Kurs topilmadi' });
     }
 
     const message = `Yangi kurs Ochilyapti: ${course.name}.
@@ -102,7 +96,7 @@ Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${await this.courseService.gen
       telegramId = `-100${telegramId}`;
     }
     if (await this.groupRepo.existsBy({ telegramId: dto.telegramId })) {
-      throw new HttpError({ code: 'ALREADY_EXISTS' });
+      throw new HttpError({ code: 'Guruh allaqachon mavjud' });
     }
 
     return await this.groupRepo.save(
@@ -126,7 +120,7 @@ Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${await this.courseService.gen
 
   async updateGroup(id: number, dto: UpdateGroupDto) {
     const group = await this.groupRepo.findOneBy({ id });
-    if (!group) throw new HttpError({ code: 'GROUP_NOT_FOUND' });
+    if (!group) throw new HttpError({ code: 'Gruppa topilmadi' });
 
     group.name = dto.name;
     group.telegramId = dto.telegramId;
@@ -136,7 +130,7 @@ Ko'proq ma'lumot olish va ro'yxatdan o'tish uchun ${await this.courseService.gen
 
   async deleteGroup(id: number) {
     const group = await this.groupRepo.findOneBy({ id });
-    if (!group) throw new HttpError({ code: 'GROUP_NOT_FOUND' });
+    if (!group) throw new HttpError({ code: 'Gruppa topilmadi' });
     return await this.groupRepo.delete({ id });
   }
 }
