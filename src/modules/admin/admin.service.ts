@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { Like, Repository } from 'typeorm';
 import { UpdateAdminDto } from '../admin/dto/update-admin.dto';
 import { HttpError } from 'src/common/exception/http.error';
@@ -23,10 +23,20 @@ import {
 } from 'src/common/auth/refresh-token-version.store';
 
 @Injectable()
-export class AdminService {
+export class AdminService implements OnApplicationBootstrap {
   constructor(
     @InjectRepository(Admin) private readonly adminRepo: Repository<Admin>,
   ) {}
+
+  async onApplicationBootstrap() {
+    const admin = await this.adminRepo.count();
+    if (admin == 0) {
+      await this.create({
+        username: 'admin',
+        password: 'admin',
+      });
+    }
+  }
 
   async create(dto: CreateAdminDto) {
     const { username } = dto;
