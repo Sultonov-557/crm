@@ -6,11 +6,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { TelegramModule } from '../telegram/telegram.module';
 import { SmsModule } from '../sms/sms.module';
+import { PdfService } from '../pdf/pdf.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Course, User])],
+  imports: [TypeOrmModule.forFeature([Course, User,PdfService])],
   controllers: [CourseController],
-  providers: [CourseService],
+  providers: [CourseService,PdfService],
   exports: [CourseService],
 })
 export class CourseModule {}

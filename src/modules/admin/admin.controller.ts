@@ -9,6 +9,7 @@ import {
   Query,
   Delete,
   Patch,
+  Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
@@ -21,11 +22,13 @@ import { RefreshAdminDto } from './dto/refresh-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
 import { AdminService } from './admin.service';
+import { PdfService } from '../pdf/pdf.service';
+import { Response } from 'express';
 
 @ApiTags('ADMIN')
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(private readonly adminService: AdminService,private readonly pdfService: PdfService,) {}
 
   @Post('login')
   @DecoratorWrapper('Admin login')
@@ -43,6 +46,29 @@ export class AdminController {
   @DecoratorWrapper('Admin logout', true, [Role.Admin])
   async logout(@Req() req: Request) {
     return CoreApiResponse.success(await this.adminService.logout(req.user.id));
+  }
+
+  @Get('pdf/all')
+  @DecoratorWrapper('Get all admins as PDF',false)
+  async getAllAdminsPdf(@Res() res: Response) {
+    try {
+      // Barcha adminlarni olamiz (limitni katta qilamiz)
+      const { data: admins } = await this.adminService.getAll({ limit: 1000, page: 1 });
+      
+      // PDF generatsiya qilamiz
+      const pdfBuffer = await this.pdfService.generatePdf({ admins, title: 'Adminlar ro\'yxati' });
+      
+      // Response ni sozlaymiz
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'attachment; filename=admins_list.pdf',
+        'Content-Length': pdfBuffer.length,
+      });
+
+      res.end(pdfBuffer);
+    } catch (error) {
+      return CoreApiResponse.error(error.message);
+    }
   }
 
   @Get('me')

@@ -1,13 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsInt, IsNotEmpty, IsOptional } from 'class-validator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 export class findAllLeadQueryDto extends PaginationDto {
-@ApiPropertyOptional()
-@IsOptional()
-@IsNotEmpty()
-fullName:string
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNotEmpty()
+  fullName?: string;
 
   @IsOptional()
   @Transform(({ value }) =>
@@ -35,6 +35,5 @@ fullName:string
   @ApiPropertyOptional()
   @IsOptional()
   @IsNotEmpty()
-  phoneNumber:string
-
-  }
+  phoneNumber?: string;
+}

@@ -9,7 +9,6 @@ import { HttpError } from 'src/common/exception/http.error';
 import { findAllLeadQueryDto } from './dto/findAll-lead.dto';
 import { User, UserStatus } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
-import { env } from 'src/common/config';
 import { Status } from '../status/entities/status.entity';
 import { findAllLeadKahbanQueryDto } from './dto/findAll-lead-kahban.dto';
 
@@ -128,7 +127,6 @@ export class LeadService {
       courseId,
       phoneNumber,
       fullName,
-      limit = 10,
       loadMoreStatusId,
       statusPage = 1,
       statusLimit = 10,

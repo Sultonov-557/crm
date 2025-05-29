@@ -8,7 +8,9 @@ import {
   Delete,
   Query,
   ParseIntPipe,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { CourseService } from './course.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -16,10 +18,15 @@ import { findAllCourseQueryDto } from './dto/findAll-course.dto';
 import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
 import { AddUsersToCourseDto } from './dto/added-users-to-course.dto';
 import { Role } from 'src/common/auth/roles/role.enum';
+import { PdfService } from '../pdf/pdf.service';
+import { CoreApiResponse } from 'src/common/response/core.response';
 
 @Controller('course')
 export class CourseController {
-  constructor(private readonly courseService: CourseService) {}
+  constructor(
+    private readonly courseService: CourseService,
+    private readonly pdfService: PdfService,
+  ) {}
 
   @Post()
   @DecoratorWrapper('Create Course', true, [Role.Admin])
@@ -31,6 +38,35 @@ export class CourseController {
   @DecoratorWrapper('Generate Url')
   generateUrl(@Param('courseId') id: string) {
     return this.courseService.generateUrl(parseInt(id));
+  }
+
+  @Get('pdf/all')
+  @DecoratorWrapper('Get all admins as PDF', false)
+  async getAllAdminsPdf(@Res() res: Response) {
+    try {
+      // Barcha adminlarni olamiz (limitni katta qilamiz)
+      const { data: courses } = await this.courseService.findAll({
+        limit: 1000,
+        page: 1,
+      });
+
+      // PDF generatsiya qilamiz
+      const pdfBuffer = await this.pdfService.generatePdf({
+        courses: courses as any,
+        title: "Kurslar ro'yxati",
+      });
+
+      // Response ni sozlaymiz
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'attachment; filename=kurslar_list.pdf',
+        'Content-Length': pdfBuffer.length,
+      });
+
+      res.end(pdfBuffer);
+    } catch (error) {
+      return CoreApiResponse.error(error.message);
+    }
   }
 
   @Post('/:courseId/users')

@@ -7,6 +7,7 @@ import {
   Query,
   Delete,
   Patch,
+  Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Role } from 'src/common/auth/roles/role.enum';
@@ -15,11 +16,16 @@ import { GetUserQueryDto } from './dto/get-user-query.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
 import { UserService } from './user.service';
+import { Response } from 'express';
+import { PdfService } from '../pdf/pdf.service';
 
 @ApiTags('USER')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly pdfService: PdfService,
+  ) {}
 
   @Get()
   @DecoratorWrapper('Get Users')
@@ -31,6 +37,32 @@ export class UserController {
   @DecoratorWrapper('Get User')
   async getOne(@Param('id', ParseIntPipe) id: number) {
     return CoreApiResponse.success(await this.userService.getOne(id));
+  }
+
+  @Get('pdf/all')
+  @DecoratorWrapper('Get all users as PDF', false)
+  async getAllAdminsPdf(@Res() res: Response) {
+    try {
+      const { data: users } = await this.userService.getAll({
+        limit: 1000,
+        page: 1,
+      });
+
+      const pdfBuffer = await this.pdfService.generatePdf({
+        users: users as any,
+        title: "Foydalanuvchilar ro'yxati",
+      });
+
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'attachment; filename=foydalanuvchilar_list.pdf',
+        'Content-Length': pdfBuffer.length,
+      });
+
+      res.end(pdfBuffer);
+    } catch (error) {
+      return CoreApiResponse.error(error.message);
+    }
   }
 
   @Delete(':id')
